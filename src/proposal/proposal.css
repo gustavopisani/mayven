@@ -1,0 +1,516 @@
+/* ================= PROPOSTA MAYVEN — "PROPOSAL PILLAR" =================
+   Escopo: tudo prefixado com .pp- / .proposal para não colidir com a home.
+   Reutiliza os tokens globais de styles.css (--black, --bone, --pink, etc). */
+
+.proposal {
+  position: relative;
+  background: var(--black);
+  color: var(--bone);
+  min-height: 100vh;
+}
+
+/* ---------- atmosfera de fundo (CSS only) ---------- */
+.pp-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.pp-bg-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(244, 241, 234, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(244, 241, 234, 0.028) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse at 50% 0%, #000 30%, transparent 80%);
+}
+.pp-bg-glow {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 40% at 78% -6%, rgba(236, 11, 87, 0.13), transparent 60%),
+    radial-gradient(ellipse 50% 34% at 12% 108%, rgba(236, 11, 87, 0.07), transparent 65%);
+}
+
+/* ---------- reveal ---------- */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.7s ease var(--d, 0ms), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1) var(--d, 0ms);
+}
+[data-reveal].is-in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] { opacity: 1; transform: none; transition: none; }
+}
+
+/* ---------- header ---------- */
+.pp-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 14px 28px;
+  background: rgba(5, 5, 6, 0.72);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.pp-brand { display: flex; align-items: center; gap: 10px; }
+.pp-mark { height: 26px; width: auto; }
+.pp-word { font-family: var(--disp); font-size: 17px; letter-spacing: 0.04em; }
+.pp-private { display: flex; align-items: center; gap: 9px; color: rgba(244, 241, 234, 0.6); }
+.pp-private-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--pink);
+  box-shadow: 0 0 10px rgba(236, 11, 87, 0.8);
+  animation: pp-pulse 2.4s ease infinite;
+}
+@keyframes pp-pulse { 50% { opacity: 0.35; } }
+.pp-header-cta { white-space: nowrap; }
+
+/* ---------- sidebar ---------- */
+.pp-sidebar {
+  position: fixed; left: 0; top: 50%; translate: 0 -50%; z-index: 90;
+  padding: 18px 0 18px 26px;
+  display: none;
+}
+.pp-sidebar ul { display: flex; flex-direction: column; gap: 2px; border-left: 1px solid var(--line); }
+.pp-sidebar a {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 6px 14px;
+  font-size: 12px; color: rgba(244, 241, 234, 0.45);
+  border-left: 2px solid transparent;
+  margin-left: -1px;
+  transition: color 0.25s, border-color 0.25s, padding-left 0.25s;
+}
+.pp-sidebar a .mono { font-size: 9px; color: rgba(244, 241, 234, 0.3); transition: color 0.25s; }
+.pp-sidebar a:hover { color: var(--bone); }
+.pp-sidebar a.is-active {
+  color: var(--bone);
+  border-left-color: var(--pink);
+  padding-left: 20px;
+}
+.pp-sidebar a.is-active .mono { color: var(--pink); }
+
+/* ---------- layout ---------- */
+.pp-main { position: relative; z-index: 1; }
+.pp-sec {
+  position: relative;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 130px 6vw 40px;
+}
+.pp-sec::before {
+  content: '';
+  position: absolute; top: 0; left: 6vw; right: 6vw;
+  height: 1px;
+  background: linear-gradient(90deg, var(--pink), rgba(236, 11, 87, 0.05) 30%, var(--line) 60%, transparent);
+}
+.pp-sec-head { max-width: 62ch; margin-bottom: 48px; }
+.pp-eyebrow { color: var(--pink); margin-bottom: 20px; }
+.pp-title {
+  font-family: var(--disp); font-weight: 400;
+  font-size: clamp(32px, 4.4vw, 64px);
+  line-height: 1.02; text-transform: uppercase; letter-spacing: 0.005em;
+  text-wrap: balance;
+}
+.pp-copy { margin-top: 22px; font-size: 17px; color: rgba(244, 241, 234, 0.75); max-width: 60ch; }
+.pp-punch {
+  margin-top: 44px; font-size: clamp(20px, 2vw, 26px); font-weight: 600;
+  max-width: 40ch; text-wrap: balance;
+  border-left: 2px solid var(--pink);
+  padding-left: 22px;
+}
+
+/* ---------- hero ---------- */
+.pp-hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex; align-items: center;
+  max-width: 1160px; margin: 0 auto;
+  padding: 120px 6vw 60px;
+  overflow: hidden;
+}
+.pp-hero-inner { position: relative; z-index: 2; max-width: 780px; }
+.pp-hero-title {
+  font-family: var(--disp); font-weight: 400;
+  font-size: clamp(40px, 6.4vw, 92px);
+  line-height: 0.98; text-transform: uppercase;
+  text-wrap: balance;
+}
+.pp-hero-copy { font-size: clamp(16px, 1.5vw, 19px); }
+.pp-micro { margin-top: 34px; color: rgba(244, 241, 234, 0.4); }
+.pp-monolith {
+  position: absolute; right: 4%; top: 50%; translate: 0 -50%; z-index: 1;
+  width: clamp(60px, 8vw, 120px); height: 68vh;
+  background: linear-gradient(180deg, rgba(17, 18, 22, 0.9), rgba(10, 10, 13, 0.95));
+  border: 1px solid rgba(244, 241, 234, 0.1);
+  box-shadow:
+    -30px 0 80px rgba(236, 11, 87, 0.09),
+    inset 1px 0 0 rgba(236, 11, 87, 0.35);
+}
+.pp-monolith::before {
+  content: '';
+  position: absolute; left: -1px; top: 12%; bottom: 12%;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, var(--pink), transparent);
+  filter: blur(0.5px);
+  box-shadow: 0 0 18px rgba(236, 11, 87, 0.7);
+}
+.pp-monolith::after {
+  content: 'MAYVEN · PROPOSAL SYSTEM';
+  position: absolute; right: -26px; top: 50%;
+  transform: rotate(90deg) translateX(-50%);
+  transform-origin: left top;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.3em;
+  color: rgba(244, 241, 234, 0.28);
+  white-space: nowrap;
+}
+
+/* ---------- CTAs ---------- */
+.pp-ctas { margin-top: 40px; display: flex; gap: 14px; flex-wrap: wrap; }
+.proposal .btn-primary {
+  box-shadow: 0 0 0 rgba(236, 11, 87, 0);
+  transition: background 0.25s, color 0.25s, border-color 0.25s, box-shadow 0.3s;
+}
+.proposal .btn-primary:hover { box-shadow: 0 0 28px rgba(236, 11, 87, 0.35); }
+
+/* ---------- grids e cards ---------- */
+.pp-grid { display: grid; gap: 18px; }
+.pp-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.pp-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.pp-card {
+  position: relative;
+  background: rgba(17, 18, 22, 0.72);
+  border: 1px solid var(--line);
+  padding: 30px 26px 26px;
+  overflow: hidden;
+  transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+.pp-card::after {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 85% 110%, rgba(236, 11, 87, 0.12), transparent 60%);
+  opacity: 0; transition: opacity 0.35s;
+}
+.pp-card:hover {
+  border-color: rgba(236, 11, 87, 0.4);
+  transform: translateY(-4px);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+}
+.pp-card:hover::after { opacity: 1; }
+.pp-card-num { color: var(--pink); }
+.pp-card-title {
+  font-family: var(--disp); font-weight: 400; text-transform: uppercase;
+  font-size: clamp(19px, 1.7vw, 26px); line-height: 1.05;
+  margin: 14px 0 10px;
+}
+.pp-card-desc { color: rgba(244, 241, 234, 0.72); font-size: 14.5px; }
+
+/* listas dentro de cards */
+.pp-list-label { margin-top: 20px; color: rgba(244, 241, 234, 0.38); }
+.pp-list { margin-top: 12px; display: flex; flex-direction: column; gap: 7px; }
+.pp-list li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 13.5px; color: rgba(244, 241, 234, 0.66);
+}
+.pp-list li::before {
+  content: '';
+  position: absolute; left: 0; top: 0.55em;
+  width: 6px; height: 1px; background: var(--pink);
+}
+
+/* ---------- quem é a mayven (bloco editorial de peso) ---------- */
+.pp-title-lg { font-size: clamp(36px, 5.4vw, 80px); max-width: 16ch; }
+.pp-mayven-head { max-width: 70ch; }
+.pp-mayven-punch {
+  margin-top: 40px;
+  font-size: clamp(22px, 2.4vw, 32px);
+  font-weight: 600;
+  max-width: 34ch;
+  border-left-width: 3px;
+}
+.pp-keywords {
+  margin-top: 44px;
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 10px 0;
+}
+.pp-keywords li {
+  color: var(--bone);
+  font-size: 12px !important;
+  letter-spacing: 0.18em;
+}
+.pp-keywords li:not(:last-child)::after {
+  content: '·';
+  color: var(--pink);
+  margin: 0 16px;
+  font-size: 15px;
+}
+
+/* ---------- diagnóstico ---------- */
+.pp-diag-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pp-diag-tag {
+  color: var(--pink);
+  border: 1px solid rgba(236, 11, 87, 0.45);
+  padding: 5px 9px;
+  font-size: 9px !important;
+  white-space: nowrap;
+}
+
+/* ---------- atuação (camadas) ---------- */
+.pp-layers { display: flex; flex-direction: column; gap: 14px; }
+.pp-layer {
+  display: grid; grid-template-columns: minmax(260px, 46%) 1fr; gap: 26px;
+  align-items: center;
+  background: rgba(17, 18, 22, 0.72);
+  border: 1px solid var(--line);
+  border-left: 2px solid rgba(236, 11, 87, 0.55);
+  padding: 26px 30px;
+  transition: border-color 0.3s, background 0.3s;
+}
+.pp-layer:hover { border-color: rgba(236, 11, 87, 0.4); background: rgba(17, 18, 22, 0.92); }
+.pp-layer-desc { max-width: 52ch; }
+
+/* ---------- metodologia ---------- */
+.pp-process {
+  position: relative;
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px;
+  counter-reset: step;
+}
+.pp-process::before {
+  content: '';
+  position: absolute; top: 3px; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--pink), var(--line) 70%, transparent);
+}
+.pp-step { position: relative; padding-top: 26px; }
+.pp-step-dot {
+  position: absolute; top: 0; left: 0;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--pink);
+  box-shadow: 0 0 12px rgba(236, 11, 87, 0.7);
+}
+.pp-step-name {
+  font-family: var(--disp); font-weight: 400; text-transform: uppercase;
+  font-size: 21px; margin: 8px 0 8px;
+}
+.pp-step .pp-card-desc { font-size: 13px; }
+
+/* ---------- investimento ---------- */
+.pp-inv { display: flex; flex-direction: column; }
+.pp-inv-sub { color: rgba(244, 241, 234, 0.45); margin-bottom: 12px; }
+.pp-inv-value {
+  margin-top: auto; padding-top: 26px;
+  font-family: var(--disp); font-size: clamp(24px, 2.2vw, 32px);
+  color: var(--bone); line-height: 1;
+}
+.pp-inv .pp-list { margin-bottom: 6px; }
+.pp-inv-note { color: rgba(244, 241, 234, 0.45); font-size: 10px !important; }
+.pp-obs { margin-top: 26px; color: rgba(244, 241, 234, 0.45); font-size: 13.5px; max-width: 60ch; }
+
+.pp-inv-objective {
+  margin-top: 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--bone);
+  border-left: 2px solid var(--pink);
+  padding-left: 12px;
+}
+.pp-inv-deliverable { margin-top: 18px; }
+.pp-inv-deliverable .pp-card-desc { margin-top: 6px; font-size: 13px; }
+.pp-inv-not { margin-top: 16px; }
+.pp-list-not li { color: rgba(244, 241, 234, 0.42); }
+.pp-list-not li::before { background: rgba(244, 241, 234, 0.3); }
+
+/* bloco recomendado (WhatsApp) — leve destaque magenta */
+.pp-inv-rec {
+  border-color: rgba(236, 11, 87, 0.5);
+  box-shadow: inset 0 1px 0 rgba(236, 11, 87, 0.55), 0 0 34px rgba(236, 11, 87, 0.08);
+}
+.pp-inv-rec:hover { border-color: rgba(236, 11, 87, 0.75); }
+.pp-inv-rec .pp-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px 20px; }
+.pp-inv-third {
+  margin-top: 18px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+.pp-inv-third .pp-list-label { margin-top: 0; color: var(--pink); }
+.pp-inv-third .pp-card-desc { margin-top: 6px; font-size: 13px; }
+.pp-inv-blocknote {
+  margin-top: 14px;
+  color: rgba(244, 241, 234, 0.45);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* painel de apoio — segurança do canal */
+.pp-inv-support {
+  margin-top: 40px;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--pink);
+  background: rgba(17, 18, 22, 0.72);
+  padding: 30px 32px;
+  max-width: 880px;
+}
+.pp-inv-support .pp-card-title { margin-top: 0; }
+.pp-inv-support .pp-card-desc { max-width: 72ch; }
+.pp-inv-support-punch {
+  margin-top: 16px;
+  font-weight: 600;
+  font-size: 15.5px;
+  color: var(--bone);
+  max-width: 60ch;
+}
+
+/* ---------- final ---------- */
+.pp-sec-final { padding-bottom: 90px; }
+.pp-sec-final .pp-sec-head { max-width: 72ch; }
+
+/* ---------- gate de acesso ---------- */
+.pp-gate {
+  position: relative;
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--black);
+  color: var(--bone);
+  padding: 24px;
+}
+.pp-gate-card {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 520px;
+  background: rgba(17, 18, 22, 0.82);
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--pink);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 0 60px rgba(236, 11, 87, 0.07);
+  padding: 44px 42px 36px;
+}
+.pp-gate-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; }
+.pp-gate-card .pp-eyebrow { display: flex; align-items: center; gap: 9px; }
+.pp-gate-title {
+  font-family: var(--disp); font-weight: 400; text-transform: uppercase;
+  font-size: clamp(26px, 4vw, 38px); line-height: 1.02;
+  text-wrap: balance;
+  margin-bottom: 4px;
+}
+.pp-gate-card .pp-copy { font-size: 15px; margin-top: 14px; }
+.pp-gate-form { margin-top: 28px; display: flex; flex-direction: column; gap: 12px; }
+.pp-gate-input {
+  width: 100%;
+  background: rgba(5, 5, 6, 0.75);
+  border: 1px solid var(--line);
+  color: var(--bone);
+  font-family: var(--mono); font-size: 14px; letter-spacing: 0.08em;
+  padding: 16px 18px;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.pp-gate-input::placeholder { color: rgba(244, 241, 234, 0.35); letter-spacing: 0.04em; }
+.pp-gate-input:focus {
+  outline: none;
+  border-color: var(--pink);
+  box-shadow: 0 0 0 1px var(--pink), 0 0 22px rgba(236, 11, 87, 0.2);
+}
+.pp-gate-input[aria-invalid='true'] { border-color: var(--coral); }
+.pp-gate-btn { cursor: pointer; }
+.pp-gate-btn:disabled {
+  opacity: 0.4; cursor: not-allowed;
+  background: var(--graphite); border-color: var(--line); color: rgba(244, 241, 234, 0.5);
+  box-shadow: none;
+}
+.pp-gate-error { min-height: 22px; margin-top: 12px; font-size: 13.5px; color: var(--coral); }
+.pp-gate-card .pp-micro { margin-top: 18px; }
+.pp-visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  clip-path: inset(50%); overflow: hidden; white-space: nowrap;
+}
+/* opção discreta de re-bloquear, após o footer da proposta */
+.pp-gate-lockbar { display: flex; justify-content: center; padding: 0 24px 40px; background: var(--black); }
+.pp-gate-lock {
+  appearance: none; background: transparent; border: 0; cursor: pointer;
+  color: rgba(244, 241, 234, 0.3);
+  padding: 8px 12px;
+  transition: color 0.25s;
+}
+.pp-gate-lock:hover { color: var(--pink); }
+@media (max-width: 720px) {
+  .pp-gate-card { padding: 34px 24px 28px; }
+}
+
+/* ---------- footer ---------- */
+.pp-footer {
+  position: relative; z-index: 1;
+  display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  max-width: 1160px; margin: 0 auto;
+  padding: 34px 6vw 44px;
+  border-top: 1px solid var(--line);
+  color: rgba(244, 241, 234, 0.4);
+}
+
+/* ---------- responsivo ---------- */
+@media (min-width: 1240px) {
+  .pp-sidebar { display: block; }
+  .pp-sec, .pp-hero, .pp-footer { padding-left: 200px; }
+  .pp-sec::before { left: 200px; }
+}
+@media (max-width: 1000px) {
+  .pp-grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .pp-process { grid-template-columns: repeat(3, 1fr); gap: 26px 16px; }
+  .pp-layer { grid-template-columns: 1fr; gap: 14px; }
+}
+@media (max-width: 720px) {
+  /* header compacto */
+  .pp-header { padding: 10px 16px; }
+  .pp-private { display: none; }
+  .pp-mark { height: 22px; }
+  .pp-word { font-size: 15px; }
+  .pp-header-cta { padding: 10px 14px; font-size: 9px; }
+
+  /* seções mais densas */
+  .pp-sec { padding: 64px 20px 24px; }
+  .pp-sec::before { left: 20px; right: 20px; }
+  .pp-sec-head { margin-bottom: 30px; }
+  .pp-eyebrow { margin-bottom: 14px; }
+  .pp-title { font-size: clamp(26px, 7.6vw, 32px); }
+  .pp-title-lg { font-size: clamp(30px, 9vw, 38px); }
+  .pp-copy { font-size: 15px; margin-top: 16px; }
+  .pp-punch { margin-top: 30px; font-size: 18px; padding-left: 16px; }
+  .pp-mayven-punch { font-size: 20px; }
+  .pp-keywords { margin-top: 30px; }
+  .pp-keywords li { font-size: 10px !important; }
+  .pp-keywords li:not(:last-child)::after { margin: 0 10px; }
+
+  /* hero */
+  .pp-hero { padding: 96px 20px 44px; min-height: 88vh; }
+  .pp-hero-title { font-size: clamp(34px, 10vw, 40px); }
+  .pp-monolith { display: none; }
+  .pp-micro { margin-top: 26px; font-size: 10px; }
+
+  /* CTAs empilhados e alinhados */
+  .pp-ctas { flex-direction: column; align-items: stretch; gap: 10px; margin-top: 30px; }
+  .pp-ctas .btn { text-align: center; padding: 16px 20px; }
+
+  /* cards compactos */
+  .pp-grid { gap: 12px; }
+  .pp-grid-2, .pp-grid-3 { grid-template-columns: 1fr; }
+  .pp-card { padding: 22px 18px 20px; }
+  .pp-card-title { font-size: 18px; margin: 12px 0 8px; }
+  .pp-card-desc { font-size: 13.5px; }
+  .pp-list { gap: 6px; margin-top: 10px; }
+  .pp-list li { font-size: 13px; }
+  .pp-list-label { margin-top: 16px; }
+
+  /* solução / metodologia */
+  .pp-layer { padding: 22px 18px; gap: 12px; }
+  .pp-layers { gap: 12px; }
+  .pp-process { grid-template-columns: 1fr; gap: 22px; }
+  .pp-process::before { display: none; }
+  .pp-step { padding-top: 20px; }
+  .pp-step-name { font-size: 19px; }
+
+  /* investimento */
+  .pp-inv-rec .pp-list { grid-template-columns: 1fr; }
+  .pp-inv-value { font-size: 24px; padding-top: 20px; }
+  .pp-inv-support { margin-top: 28px; padding: 24px 20px; }
+  .pp-obs { margin-top: 20px; font-size: 12.5px; }
+
+  .pp-sec-final { padding-bottom: 64px; }
+  .pp-footer { padding: 24px 20px 34px; flex-direction: column; gap: 6px; }
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .pp-private-dot { animation: none; }
+  .pp-card, .pp-card:hover { transform: none; transition: none; }
+  .proposal .btn-primary { transition: none; }
+}

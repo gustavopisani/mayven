@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /client
+Disallow: /propostas
+
+Sitemap: https://mayven.com.br/sitemap.xml

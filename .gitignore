@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.claude/
+.env
+.env.local
+.env.production
+.firebase/
+firebase-debug.log*
+assets/clients/galpao-animal/website-preview.gif
