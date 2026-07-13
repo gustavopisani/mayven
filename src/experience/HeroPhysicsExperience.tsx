@@ -82,17 +82,17 @@ type HeroPhysicsExperienceProps = {
 }
 
 const DEFAULT_COPY: HeroPhysicsCopy = {
-  activeCaption: 'The interface is now in your hands.',
-  denied: 'Motion access was not allowed. Drag to move the gravity.',
+  activeCaption: 'Experience is the interface.',
+  denied: 'Motion access was not allowed. Move, press or swipe to interact.',
   error: 'The experience could not start here. The hero is still ready.',
   exit: 'EXIT EXPERIENCE',
-  fallback: 'Drag to move the gravity.',
-  fallbackCaption: 'Touch or drag anywhere in the hero.',
-  idle: 'The interface becomes the experience.',
+  fallback: 'MOVE TO INTERACT',
+  fallbackCaption: 'Press, drag or swipe anywhere in the hero.',
+  idle: 'Make it felt.',
   permission: 'Allow motion access to make the experience respond to your phone.',
   reducedMotion: 'Motion effects are reduced on this device.',
   reset: 'RESET',
-  trigger: 'IMMERSE',
+  trigger: 'MAKE IT MOVE',
   tilt: 'TILT YOUR PHONE',
 }
 
@@ -126,18 +126,26 @@ function getVisibleText(element: HTMLElement) {
 function fallbackTextLines(headline: string, layerRect: DOMRect): TextLine[] {
   const size = Math.max(58, Math.min(layerRect.width * 0.16, 108))
   const font = `normal 400 ${size}px Anton, Arial Black, sans-serif`
-  const lines = headline.replace(/\s+/g, ' ').trim().split(' IMPOSSIBLE')
+  const normalized = headline.replace(/\s+/g, ' ').trim()
+  const lines = normalized.includes(' IS THE ')
+    ? normalized.replace(' IS THE ', '\nIS THE ').split('\n')
+    : normalized.split(' ').reduce<string[]>((result, word, index, words) => {
+      const midpoint = Math.ceil(words.length / 2)
+      const lineIndex = index < midpoint ? 0 : 1
+      result[lineIndex] = result[lineIndex] ? `${result[lineIndex]} ${word}` : word
+      return result
+    }, [])
 
   return [
     {
       font,
-      text: lines[0] ? `${lines[0]} ` : 'FEEL THE ',
+      text: lines[0] ? `${lines[0]} ` : 'EXPERIENCE ',
       x: Math.max(22, layerRect.width * 0.08),
       y: layerRect.height * 0.38,
     },
     {
       font,
-      text: headline.includes('IMPOSSIBLE') ? 'IMPOSSIBLE.' : headline,
+      text: lines[1] ?? normalized,
       x: Math.max(22, layerRect.width * 0.08),
       y: layerRect.height * 0.38 + size * 0.9,
     },

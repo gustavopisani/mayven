@@ -1,8 +1,9 @@
 # MAYVEN — Creative Tech Media Company
 
-Site single-page da MAYVEN. Conceito: **The System Behind the Signal** — a própria experiência do site
-é a demonstração da capacidade técnica e criativa da empresa. Tudo é computado em tempo real no browser:
-nenhum vídeo decorativo, nenhum efeito sem função narrativa.
+Site single-page da MAYVEN. Conceito: **Experience is the interface** — a própria interface
+deixa de ser conteúdo estático e se transforma em comportamento, matéria e resposta. A tecnologia
+aparece como meio para criar experiências digitais, espaciais, conectadas, live e media através de
+telas, espaços, objetos e pessoas.
 
 Três áreas:
 

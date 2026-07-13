@@ -126,41 +126,37 @@ function HeroFilm() {
 /* ---------------- content (fonte de verdade: plataforma de marca aprovada) ---------------- */
 
 const SYSTEMS = [
-  { t: 'Immersive Brand Worlds', d: 'Universos digitais, narrativas interativas, motion, 3D e interfaces que fazem a marca ser sentida.' },
-  { t: 'Web Experiences & Platforms', d: 'Sites, plataformas, portais e jornadas digitais desenhadas como experiências, não páginas estáticas.' },
-  { t: 'Spatial & Connected Experiences', d: 'AR, VR, Vision Pro, IoT, totens, instalações e ativações que conectam físico e digital.' },
-  { t: 'Content & Media Engines', d: 'Filmes, conteúdo, mídia e distribuição trabalhando juntos para transformar atenção em presença.' },
-  { t: 'Commerce & Growth Systems', d: 'Experiências de conversão, e-commerce, CRM, campanhas e automações que mantêm o desejo em movimento.' },
-  { t: 'AI & Generative Interfaces', d: 'IA aplicada, agentes, personalização e protótipos criativos para tornar ideias ambiciosas navegáveis.' },
+  { t: 'Digital Experiences', d: 'Sites, plataformas, interfaces, aplicações, e-commerce, WebGL e produtos digitais desenhados para serem explorados, não apenas navegados.' },
+  { t: 'Spatial Experiences', d: 'AR, VR, Apple Vision Pro, ambientes virtuais e computação espacial para quando uma tela não basta.' },
+  { t: 'Connected Experiences', d: 'IoT, sensores, hardware, software, dispositivos e ambientes responsivos que percebem, respondem e participam.' },
+  { t: 'Live Experiences', d: 'Eventos, instalações, ativações, totens, projeções e gamificação transformando presença física em participação ativa.' },
+  { t: 'Media Experiences', d: 'Conteúdo, motion, campanhas, mídia, narrativas e distribuição pensados para atravessar telas, formatos, canais e cultura.' },
+  { t: 'Experience Systems', d: 'Estratégia, engenharia, dados, operação e mensuração conectando os territórios em uma capacidade contínua.' },
 ]
 
 const METHOD = [
-  { t: 'Feel', d: 'Definimos a sensação que a experiência precisa deixar na memória.' },
-  { t: 'Imagine', d: 'Transformamos ambição em narrativa, direção visual e possibilidades de interação.' },
-  { t: 'Design', d: 'Criamos a jornada, a interface, o ritmo, o conteúdo e os momentos de surpresa.' },
-  { t: 'Engineer', d: 'Construímos a camada invisível: WebGL, plataformas, IA, mídia, integrações e dispositivos.' },
-  { t: 'Launch', d: 'Ativamos a experiência nos canais, espaços e contextos em que ela precisa viver.' },
-  { t: 'Evolve', d: 'Medimos comportamento, aprendemos com o público e expandimos o sistema continuamente.' },
+  { t: 'Imagine', d: 'Define the ambition, context and desired human response.' },
+  { t: 'Design', d: 'Translate the idea into narrative, interaction, space and behavior.' },
+  { t: 'Engineer', d: 'Build the systems, technology and integrations that make it real.' },
+  { t: 'Activate', d: 'Bring the experience into screens, spaces, channels and people.' },
+  { t: 'Learn', d: 'Observe behavior, performance and impact to continuously evolve.' },
 ]
 
 const SIGNALS = [
-  { t: 'Impossible Launch Film', k: 'CINEMATIC EXPERIENCE' },
+  { t: 'Cinematic Launch Experience', k: 'CONTENT & MOTION' },
   { t: 'Interactive Web World', k: 'WEBGL & MOTION' },
-  { t: 'Connected Space Prototype', k: 'SPATIAL TECH' },
+  { t: 'Connected Space Prototype', k: 'SENSORS & SPACE' },
   { t: 'Media Experience Engine', k: 'CONTENT & DISTRIBUTION' },
 ]
 /* Cases reais entram aqui quando existirem — estrutura pronta, sem inventar
    clientes, métricas ou resultados. */
 
 const MENU = [
-  { id: 'c-manifesto', n: '01', t: 'Feel the Impossible' },
-  { id: 'c-invisible', n: '02', t: 'Invisible Work' },
-  { id: 'c-build', n: '03', t: 'What We Create' },
-  { id: 'c-immersive', n: '04', t: 'Experience Territories' },
-  { id: 'c-method', n: '05', t: 'Process' },
-  { id: 'c-signals', n: '06', t: 'Selected Experiences' },
-  { id: 'c-operation', n: '07', t: 'Possibilities' },
-  { id: 'c-cta', n: '08', t: 'Bring an Ambition' },
+  { id: 'c-signals', n: '01', t: 'Work' },
+  { id: 'c-build', n: '02', t: 'Experiences' },
+  { id: 'c-invisible', n: '03', t: 'Studio' },
+  { id: 'c-method', n: '04', t: 'Insights' },
+  { id: 'c-cta', n: '05', t: 'Contact' },
 ]
 
 
@@ -306,7 +302,7 @@ function XNav() {
         <p className="x-nav-tag x-mono">CREATIVE TECH MEDIA COMPANY</p>
         <div className="x-nav-right">
           <a className="x-nav-cta x-mono" href="#c-cta" onClick={go('c-cta')}>
-            BRING US THE IMPOSSIBLE
+            START A PROJECT
           </a>
           <button ref={btn} className="x-menu-btn x-mono" aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen(!open)}>
             {open ? 'FECHAR' : 'MENU'}
@@ -518,8 +514,8 @@ export default function Journey() {
     }
   }, [])
 
-  const buildIdx = useChapterIndex('c-build', 6)
-  const methodIdx = useChapterIndex('c-method', 6)
+  const buildIdx = useChapterIndex('c-build', SYSTEMS.length)
+  const methodIdx = useChapterIndex('c-method', METHOD.length)
 
   const gl = quality.current !== 'off'
 
@@ -540,52 +536,57 @@ export default function Journey() {
           <HeroFilm />
           <div className="x-hero-copy">
             <p className="x-kicker x-mono x-fade">Creative Tech Media Company</p>
-            <h1 className="x-hero-title" aria-label="Feel the impossible.">
-              <span>Feel the </span>
-              <span>impossible.</span>
+            <h1 className="x-hero-title" aria-label="Experience is the interface.">
+              <span>Experience</span>
+              <span>is the interface.</span>
             </h1>
             <p className="x-hero-sub x-fade">
-              We transform ideas into experiences people can enter, touch, feel and remember.
+              We create experiences that move through screens, spaces, objects and people.
             </p>
             <div className="x-hero-ctas x-fade">
-              <a className="x-btn x-btn-solid" href="#c-cta" data-x="">Bring us the impossible</a>
-              <a className="x-btn" href="#c-manifesto" data-x="">Explore our experiences</a>
+              <a className="x-btn x-btn-solid" href="#c-cta" data-x="">Create an experience</a>
+              <a className="x-btn" href="#c-signals" data-x="">Explore our work</a>
             </div>
           </div>
-          <HeroPhysicsExperience headline="FEEL THE IMPOSSIBLE." />
+          <HeroPhysicsExperience headline="EXPERIENCE IS THE INTERFACE." />
           <div className="x-scrollcue x-fade" aria-hidden="true">
             <span className="x-mono">SCROLL</span>
             <i />
           </div>
         </Chapter>
 
-        {/* 02 — MANIFESTO */}
+        {/* 02 — POSITIONING */}
         <Chapter id="c-manifesto" vh={240} className="x-manifesto">
-          <p className="x-eyebrow x-mono" data-reveal>01 — FEEL THE IMPOSSIBLE</p>
-          <h2 className="x-echo" data-text="FEEL" data-reveal>
-            O que significa <em>sentir o impossível?</em>
+          <p className="x-eyebrow x-mono" data-reveal>01 — POSITIONING</p>
+          <h2 className="x-echo" data-text="EXPERIENCE" data-reveal>
+            Technology is not <em>the experience.</em>
           </h2>
           <p className="x-copy" data-reveal>
-            Significa entrar em uma experiência em que a tecnologia desaparece e a sensação permanece.
-            A pessoa não lembra de uma ferramenta, de um formato ou de uma tela. Ela lembra do que viveu.
+            It is what makes the experience possible. People do not remember the framework,
+            the sensor, the rendering engine or the integration.
           </p>
           <p className="x-copy x-copy-punch" data-reveal>
-            A MAYVEN transforma criatividade, mídia e engenharia em <strong>presença memorável.</strong>
+            They remember what happened when they touched, entered, moved, discovered or shared something.
+            <strong> We design that moment.</strong>
           </p>
         </Chapter>
 
         {/* 03 — THE INVISIBLE WORK */}
         <Chapter id="c-invisible" vh={230} className="x-invisible">
           <p className="x-eyebrow x-mono" data-reveal>02 — THE INVISIBLE WORK</p>
-          <h2 className="x-echo" data-text="SYSTEM" data-reveal>
-            O encantamento precisa de <em>estrutura invisível.</em>
+          <h2 className="x-echo" data-text="WORK" data-reveal>
+            The best technology is often <em>never noticed.</em>
           </h2>
           <p className="x-copy" data-reveal>
-            Para uma experiência parecer mágica, muita coisa precisa funcionar sem aparecer: estratégia,
-            arquitetura, interface, conteúdo, mídia, dados, integrações, dispositivos e operação contínua.
+            People notice when the interaction feels natural, the response feels immediate,
+            the story feels alive and the environment feels aware.
+          </p>
+          <p className="x-copy x-copy-punch" data-reveal>
+            Strategy, story, experience design, interface, motion, spatial thinking, engineering,
+            intelligence, media and measurement work as one system.
           </p>
           <ul className="x-tags x-mono" data-reveal>
-            {['STRATEGY', 'INTERFACE', 'MOTION', 'SYSTEMS', 'MEDIA', 'INTELLIGENCE'].map((t) => (
+            {['STRATEGY', 'STORY', 'EXPERIENCE DESIGN', 'INTERFACE', 'MOTION', 'ENGINEERING', 'MEDIA', 'MEASUREMENT'].map((t) => (
               <li key={t}>{t}</li>
             ))}
           </ul>
@@ -593,7 +594,7 @@ export default function Journey() {
 
         {/* 04 — WHAT WE BUILD */}
         <Chapter id="c-build" vh={360} className="x-build">
-          <p className="x-eyebrow x-mono">03 — WHAT WE CREATE</p>
+          <p className="x-eyebrow x-mono">03 — EXPERIENCE TERRITORIES</p>
           <div className="x-build-grid">
             <span className="x-build-idx" aria-hidden="true" key={`n${buildIdx}`}>
               0{buildIdx + 1}
@@ -612,21 +613,25 @@ export default function Journey() {
               </ol>
             </div>
           </div>
-          <p className="x-note x-mono">FEELING FIRST. EXPERIENCE NEXT. TECHNOLOGY ONLY WHERE IT MAKES THE IMPOSSIBLE REAL.</p>
+          <p className="x-note x-mono">SCREENS · SPACES · OBJECTS · PEOPLE · MAKE IT FELT.</p>
         </Chapter>
 
         {/* 05 — IMMERSIVE & PHYSICAL */}
         <Chapter id="c-immersive" vh={240} className="x-immersive">
-          <p className="x-eyebrow x-mono" data-reveal>04 — EXPERIENCE TERRITORIES</p>
-          <h2 className="x-echo" data-text="BEYOND" data-reveal>
-            O impossível pode viver <em>em qualquer lugar.</em>
+          <p className="x-eyebrow x-mono" data-reveal>04 — WHERE EXPERIENCE LIVES</p>
+          <h2 className="x-echo" data-text="ACROSS" data-reveal>
+            The interface can be <em>anything people meet.</em>
           </h2>
           <p className="x-copy" data-reveal>
-            Projetamos experiências digitais, espaciais e conectadas: sites, plataformas, WebGL, AR, VR,
-            Vision Pro, IoT, gamificação, instalações, totens interativos, ativações e eventos.
+            A screen, a space, an object, a gesture, a surface, an installation, a device,
+            a campaign or an environment. The medium follows the reaction we want to create.
+          </p>
+          <p className="x-copy x-copy-punch" data-reveal>
+            Mayven combines creativity, technology, media and engineering to design how ideas are
+            experienced across screens, spaces, objects and people.
           </p>
           <ul className="x-tags x-mono" data-reveal>
-            {['VISION PRO', 'VR / AR', 'IOT', 'GAMIFICATION', 'TOTENS', 'EVENT TECH'].map((t) => (
+            {['SITES', 'WEBGL', 'AR / VR', 'VISION PRO', 'IOT', 'TOTEMS', 'INSTALLATIONS', 'EVENTS', 'MEDIA'].map((t) => (
               <li key={t}>{t}</li>
             ))}
           </ul>
@@ -634,10 +639,10 @@ export default function Journey() {
 
         {/* 06 — METHOD */}
         <Chapter id="c-method" vh={300} className="x-method">
-          <p className="x-eyebrow x-mono">05 — PROCESS · FROM FEELING TO SYSTEM</p>
+          <p className="x-eyebrow x-mono">05 — PROCESS · FROM RESPONSE TO SYSTEM</p>
           <div className="x-method-grid">
             <div className="x-station" key={methodIdx}>
-              <span className="x-station-num x-mono">{String(methodIdx + 1).padStart(2, '0')} / 06</span>
+              <span className="x-station-num x-mono">{String(methodIdx + 1).padStart(2, '0')} / {String(METHOD.length).padStart(2, '0')}</span>
               <h2>{METHOD[methodIdx].t}</h2>
               <p>{METHOD[methodIdx].d}</p>
             </div>
@@ -650,43 +655,46 @@ export default function Journey() {
             </ol>
           </div>
           <p className="x-note x-mono">
-            NÃO COMEÇAMOS COM TECNOLOGIA. COMEÇAMOS COM O QUE A EXPERIÊNCIA PRECISA FAZER ALGUÉM SENTIR.
+            WE START WITH THE HUMAN RESPONSE, THEN DEFINE THE TECHNOLOGY REQUIRED TO MAKE IT REAL.
           </p>
         </Chapter>
 
         {/* 06 — SELECTED SIGNALS */}
         <Chapter id="c-signals" vh={220} className="x-signals">
-          <p className="x-eyebrow x-mono" data-reveal>06 — SELECTED EXPERIENCES</p>
-          <h2 className="x-echo" data-text="LIVE" data-reveal>
-            Selected <em>Experiences</em>
+          <p className="x-eyebrow x-mono" data-reveal>06 — WORK FRAMEWORK</p>
+          <h2 className="x-echo" data-text="WORK" data-reveal>
+            Work is shown through <em>what people experience.</em>
           </h2>
           <p className="x-copy" data-reveal>
-            Cases, protótipos e experimentos vão viver aqui. Por enquanto, esta é a estrutura do que a Mayven
-            está preparada para conceber, construir e operar — sem números inflados, sem cases emprestados.
+            Every case is structured by context, experience, interaction, technology and impact.
+            The stack matters, but only after the human moment is clear.
           </p>
           <div className="x-signal-row" data-reveal>
             {SIGNALS.map((s, i) => (
               <article key={s.t} data-x="">
                 <span className="x-mono">S_{String(i + 1).padStart(2, '0')} · {s.k}</span>
                 <h3>{s.t}</h3>
-                <b className="x-mono">EM CONSTRUÇÃO</b>
+                <b className="x-mono">CONTEXT · EXPERIENCE · INTERACTION · TECHNOLOGY · IMPACT</b>
               </article>
             ))}
           </div>
         </Chapter>
 
-        {/* 07 — OPERATION */}
+        {/* 07 — MANIFESTO */}
         <Chapter id="c-operation" vh={200} className="x-operation">
-          <p className="x-eyebrow x-mono" data-reveal>07 — POSSIBILITIES</p>
-          <h2 className="x-echo" data-text="ALWAYS ON" data-reveal>
-            Uma experiência não termina <em>no lançamento.</em>
+          <p className="x-eyebrow x-mono" data-reveal>07 — MANIFESTO</p>
+          <h2 className="x-echo" data-text="FELT" data-reveal>
+            Technology should not sit <em>between people and the moment.</em>
           </h2>
           <p className="x-copy" data-reveal>
-            Ela pode virar plataforma, conteúdo, campanha, instalação, canal, comunidade, CRM, mídia e dados.
-            Construímos o sistema para que o impossível continue vivo depois do primeiro impacto.
+            It should make the interaction feel natural, the response feel immediate,
+            the story feel alive, the environment feel aware and the idea feel real.
+          </p>
+          <p className="x-copy x-copy-punch" data-reveal>
+            Because technology is not what people remember. <strong>The experience is.</strong>
           </p>
           <ul className="x-tags x-mono" data-reveal>
-            {['TECNOLOGIA', 'CONTEÚDO', 'MÍDIA', 'CANAIS', 'CRM', 'VENDAS', 'DADOS'].map((t) => (
+            {['MAKE IT FELT', 'NATURAL RESPONSE', 'LIVE STORY', 'AWARE SPACE', 'REAL IDEA'].map((t) => (
               <li key={t}>{t}</li>
             ))}
           </ul>
@@ -694,16 +702,17 @@ export default function Journey() {
 
         {/* 08 — FINAL CTA */}
         <Chapter id="c-cta" vh={170} className="x-cta">
-          <p className="x-eyebrow x-mono" data-reveal>08 — BRING AN AMBITION</p>
+          <p className="x-eyebrow x-mono" data-reveal>08 — START WITH THE FEELING</p>
           <h2 data-reveal>
-            Bring us <em>the impossible.</em>
+            What should <em>people feel?</em>
           </h2>
           <p className="x-copy" data-reveal>
-            Conte a ambição. A Mayven transforma em uma experiência que pessoas podem viver, tocar, sentir e lembrar.
+            Tell us the reaction, behavior or transformation you want to create.
+            We will design the experience and determine the technology required to make it real.
           </p>
           <div className="x-hero-ctas" data-reveal>
-            <a className="x-btn x-btn-solid" href="mailto:hello@mayven.com.br" data-x="">Bring us the impossible</a>
-            <a className="x-btn" href="mailto:hello@mayven.com.br" data-x="">Talk to MAYVEN</a>
+            <a className="x-btn x-btn-solid" href="mailto:hello@mayven.com.br" data-x="">Create an experience</a>
+            <a className="x-btn" href="mailto:hello@mayven.com.br" data-x="">Start with the feeling</a>
           </div>
           <footer className="x-foot" data-reveal>
             <div>
@@ -722,7 +731,7 @@ export default function Journey() {
             <div>
               <p className="x-mono">MAYVEN</p>
               <p>Creative Tech Media Company</p>
-              <p className="x-legal">© 2026 MAYVEN — Feel the impossible.</p>
+              <p className="x-legal">© 2026 MAYVEN — Experience is the interface.</p>
             </div>
           </footer>
         </Chapter>

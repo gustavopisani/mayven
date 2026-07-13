@@ -1,5 +1,5 @@
 /* ============================================================
-   MAYVEN — THE SYSTEM BEHIND THE SIGNAL
+   MAYVEN — EXPERIENCE IS THE INTERFACE
    Experience layer. One fixed WebGL world behind, DOM journey on top.
    ============================================================ */
 
@@ -584,11 +584,24 @@ body[data-xtheme='light'] .x-btn:hover { color: var(--xw); }
   }
 }
 @media (max-width: 860px) and (orientation: landscape) and (max-height: 520px) {
+  .x-hero .x-ch-view {
+    min-height: 100svh;
+    padding-top: 66px;
+    padding-bottom: 72px;
+  }
   .x-hero-copy {
-    padding-top: 9vh;
+    max-width: min(570px, 70vw);
+    padding-top: 0;
   }
   .x-hero-title {
-    font-size: clamp(42px, 12vh, 72px);
+    font-size: clamp(38px, 12vh, 58px);
+  }
+  .x-hero-sub {
+    margin-top: 12px;
+    max-width: 40ch;
+  }
+  .x-hero-ctas {
+    margin-top: 18px;
   }
   .x-physics-console {
     left: calc(18px + env(safe-area-inset-left));
