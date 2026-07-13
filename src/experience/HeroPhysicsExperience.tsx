@@ -82,18 +82,18 @@ type HeroPhysicsExperienceProps = {
 }
 
 const DEFAULT_COPY: HeroPhysicsCopy = {
-  activeCaption: 'Experience is the interface.',
-  denied: 'Motion access was not allowed. Move, press or swipe to interact.',
-  error: 'The experience could not start here. The hero is still ready.',
-  exit: 'EXIT EXPERIENCE',
-  fallback: 'MOVE TO INTERACT',
-  fallbackCaption: 'Press, drag or swipe anywhere in the hero.',
+  activeCaption: 'A experiência é a interface.',
+  denied: 'O acesso ao movimento não foi permitido. Toque, pressione ou arraste para interagir.',
+  error: 'A experiência não pôde iniciar aqui. O hero continua disponível.',
+  exit: 'SAIR',
+  fallback: 'MOVA PARA INTERAGIR',
+  fallbackCaption: 'Pressione, arraste ou faça swipe em qualquer ponto do hero.',
   idle: 'Make it felt.',
-  permission: 'Allow motion access to make the experience respond to your phone.',
-  reducedMotion: 'Motion effects are reduced on this device.',
+  permission: 'Permita o acesso ao movimento para a experiência responder ao celular.',
+  reducedMotion: 'Os efeitos de movimento estão reduzidos neste dispositivo.',
   reset: 'RESET',
-  trigger: 'MAKE IT MOVE',
-  tilt: 'TILT YOUR PHONE',
+  trigger: 'ATIVAR EXPERIÊNCIA',
+  tilt: 'INCLINE O CELULAR',
 }
 
 const ACTIVE_STATES = new Set<ExperienceState>(['active', 'denied', 'unsupported'])
@@ -127,7 +127,9 @@ function fallbackTextLines(headline: string, layerRect: DOMRect): TextLine[] {
   const size = Math.max(58, Math.min(layerRect.width * 0.16, 108))
   const font = `normal 400 ${size}px Anton, Arial Black, sans-serif`
   const normalized = headline.replace(/\s+/g, ' ').trim()
-  const lines = normalized.includes(' IS THE ')
+  const lines = normalized.includes(' É A ')
+    ? normalized.replace(' É A ', '\nÉ A ').split('\n')
+    : normalized.includes(' IS THE ')
     ? normalized.replace(' IS THE ', '\nIS THE ').split('\n')
     : normalized.split(' ').reduce<string[]>((result, word, index, words) => {
       const midpoint = Math.ceil(words.length / 2)
@@ -139,7 +141,7 @@ function fallbackTextLines(headline: string, layerRect: DOMRect): TextLine[] {
   return [
     {
       font,
-      text: lines[0] ? `${lines[0]} ` : 'EXPERIENCE ',
+      text: lines[0] ? `${lines[0]} ` : 'A EXPERIÊNCIA ',
       x: Math.max(22, layerRect.width * 0.08),
       y: layerRect.height * 0.38,
     },

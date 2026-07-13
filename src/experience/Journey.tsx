@@ -135,28 +135,28 @@ const SYSTEMS = [
 ]
 
 const METHOD = [
-  { t: 'Imagine', d: 'Define the ambition, context and desired human response.' },
-  { t: 'Design', d: 'Translate the idea into narrative, interaction, space and behavior.' },
-  { t: 'Engineer', d: 'Build the systems, technology and integrations that make it real.' },
-  { t: 'Activate', d: 'Bring the experience into screens, spaces, channels and people.' },
-  { t: 'Learn', d: 'Observe behavior, performance and impact to continuously evolve.' },
+  { t: 'Imagine', d: 'Definir ambição, contexto e a resposta humana que a experiência precisa provocar.' },
+  { t: 'Design', d: 'Traduzir a ideia em narrativa, interação, espaço, ritmo e comportamento.' },
+  { t: 'Engineer', d: 'Construir os sistemas, tecnologias e integrações que tornam a experiência real.' },
+  { t: 'Activate', d: 'Levar a experiência para telas, espaços, canais, objetos e pessoas.' },
+  { t: 'Learn', d: 'Observar comportamento, performance e impacto para evoluir continuamente.' },
 ]
 
 const SIGNALS = [
-  { t: 'Cinematic Launch Experience', k: 'CONTENT & MOTION' },
+  { t: 'Launch Film Cinemático', k: 'CONTENT & MOTION' },
   { t: 'Interactive Web World', k: 'WEBGL & MOTION' },
-  { t: 'Connected Space Prototype', k: 'SENSORS & SPACE' },
+  { t: 'Protótipo de Espaço Conectado', k: 'SENSORS & SPACE' },
   { t: 'Media Experience Engine', k: 'CONTENT & DISTRIBUTION' },
 ]
 /* Cases reais entram aqui quando existirem — estrutura pronta, sem inventar
    clientes, métricas ou resultados. */
 
 const MENU = [
-  { id: 'c-signals', n: '01', t: 'Work' },
-  { id: 'c-build', n: '02', t: 'Experiences' },
+  { id: 'c-signals', n: '01', t: 'Projetos' },
+  { id: 'c-build', n: '02', t: 'Experiências' },
   { id: 'c-invisible', n: '03', t: 'Studio' },
   { id: 'c-method', n: '04', t: 'Insights' },
-  { id: 'c-cta', n: '05', t: 'Contact' },
+  { id: 'c-cta', n: '05', t: 'Contato' },
 ]
 
 
@@ -191,7 +191,7 @@ function XLoader({ onDone }: { onDone: () => void }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-  const status = pct < 33 ? 'INITIALIZING SIGNAL' : pct < 72 ? 'CALIBRATING SYSTEM' : pct < 99 ? 'LOADING MAYVEN' : 'SYSTEM READY'
+  const status = pct < 33 ? 'INICIANDO SIGNAL' : pct < 72 ? 'CALIBRANDO SISTEMA' : pct < 99 ? 'CARREGANDO MAYVEN' : 'SISTEMA PRONTO'
   return (
     <div className={`x-loader ${leaving ? 'is-leaving' : ''}`} role="status" aria-label="Carregando MAYVEN">
       <div className="x-loader-word" aria-hidden="true">
@@ -302,7 +302,7 @@ function XNav() {
         <p className="x-nav-tag x-mono">CREATIVE TECH MEDIA COMPANY</p>
         <div className="x-nav-right">
           <a className="x-nav-cta x-mono" href="#c-cta" onClick={go('c-cta')}>
-            START A PROJECT
+            COMEÇAR PROJETO
           </a>
           <button ref={btn} className="x-menu-btn x-mono" aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen(!open)}>
             {open ? 'FECHAR' : 'MENU'}
@@ -536,54 +536,54 @@ export default function Journey() {
           <HeroFilm />
           <div className="x-hero-copy">
             <p className="x-kicker x-mono x-fade">Creative Tech Media Company</p>
-            <h1 className="x-hero-title" aria-label="Experience is the interface.">
-              <span>Experience</span>
-              <span>is the interface.</span>
+            <h1 className="x-hero-title" aria-label="A experiência é a interface.">
+              <span>A experiência</span>
+              <span>é a interface.</span>
             </h1>
             <p className="x-hero-sub x-fade">
-              We create experiences that move through screens, spaces, objects and people.
+              Criamos experiências que atravessam telas, espaços, objetos e pessoas.
             </p>
             <div className="x-hero-ctas x-fade">
-              <a className="x-btn x-btn-solid" href="#c-cta" data-x="">Create an experience</a>
-              <a className="x-btn" href="#c-signals" data-x="">Explore our work</a>
+              <a className="x-btn x-btn-solid" href="#c-cta" data-x="">Criar uma experiência</a>
+              <a className="x-btn" href="#c-signals" data-x="">Ver projetos</a>
             </div>
           </div>
-          <HeroPhysicsExperience headline="EXPERIENCE IS THE INTERFACE." />
+          <HeroPhysicsExperience headline="A EXPERIÊNCIA É A INTERFACE." />
           <div className="x-scrollcue x-fade" aria-hidden="true">
-            <span className="x-mono">SCROLL</span>
+            <span className="x-mono">ROLAR</span>
             <i />
           </div>
         </Chapter>
 
-        {/* 02 — POSITIONING */}
+        {/* 02 — POSICIONAMENTO */}
         <Chapter id="c-manifesto" vh={240} className="x-manifesto">
-          <p className="x-eyebrow x-mono" data-reveal>01 — POSITIONING</p>
-          <h2 className="x-echo" data-text="EXPERIENCE" data-reveal>
-            Technology is not <em>the experience.</em>
+          <p className="x-eyebrow x-mono" data-reveal>01 — POSICIONAMENTO</p>
+          <h2 className="x-echo" data-text="EXPERIÊNCIA" data-reveal>
+            Tecnologia não é <em>a experiência.</em>
           </h2>
           <p className="x-copy" data-reveal>
-            It is what makes the experience possible. People do not remember the framework,
-            the sensor, the rendering engine or the integration.
+            É o que torna a experiência possível. As pessoas não lembram do framework,
+            do sensor, da engine de render ou da integração.
           </p>
           <p className="x-copy x-copy-punch" data-reveal>
-            They remember what happened when they touched, entered, moved, discovered or shared something.
-            <strong> We design that moment.</strong>
+            Elas lembram do que aconteceu quando tocaram, entraram, moveram, descobriram ou compartilharam algo.
+            <strong> Nós desenhamos esse momento.</strong>
           </p>
         </Chapter>
 
-        {/* 03 — THE INVISIBLE WORK */}
+        {/* 03 — INVISIBLE WORK */}
         <Chapter id="c-invisible" vh={230} className="x-invisible">
-          <p className="x-eyebrow x-mono" data-reveal>02 — THE INVISIBLE WORK</p>
+          <p className="x-eyebrow x-mono" data-reveal>02 — INVISIBLE WORK</p>
           <h2 className="x-echo" data-text="WORK" data-reveal>
-            The best technology is often <em>never noticed.</em>
+            A melhor tecnologia quase sempre <em>desaparece.</em>
           </h2>
           <p className="x-copy" data-reveal>
-            People notice when the interaction feels natural, the response feels immediate,
-            the story feels alive and the environment feels aware.
+            As pessoas percebem quando a interação parece natural, a resposta é imediata,
+            a história parece viva e o ambiente entende o que está acontecendo.
           </p>
           <p className="x-copy x-copy-punch" data-reveal>
             Strategy, story, experience design, interface, motion, spatial thinking, engineering,
-            intelligence, media and measurement work as one system.
+            intelligence, media e measurement trabalham como um sistema só.
           </p>
           <ul className="x-tags x-mono" data-reveal>
             {['STRATEGY', 'STORY', 'EXPERIENCE DESIGN', 'INTERFACE', 'MOTION', 'ENGINEERING', 'MEDIA', 'MEASUREMENT'].map((t) => (
@@ -592,9 +592,9 @@ export default function Journey() {
           </ul>
         </Chapter>
 
-        {/* 04 — WHAT WE BUILD */}
+        {/* 04 — TERRITÓRIOS */}
         <Chapter id="c-build" vh={360} className="x-build">
-          <p className="x-eyebrow x-mono">03 — EXPERIENCE TERRITORIES</p>
+          <p className="x-eyebrow x-mono">03 — TERRITÓRIOS DE EXPERIÊNCIA</p>
           <div className="x-build-grid">
             <span className="x-build-idx" aria-hidden="true" key={`n${buildIdx}`}>
               0{buildIdx + 1}
@@ -613,25 +613,25 @@ export default function Journey() {
               </ol>
             </div>
           </div>
-          <p className="x-note x-mono">SCREENS · SPACES · OBJECTS · PEOPLE · MAKE IT FELT.</p>
+          <p className="x-note x-mono">TELAS · ESPAÇOS · OBJETOS · PESSOAS · MAKE IT FELT.</p>
         </Chapter>
 
         {/* 05 — IMMERSIVE & PHYSICAL */}
         <Chapter id="c-immersive" vh={240} className="x-immersive">
-          <p className="x-eyebrow x-mono" data-reveal>04 — WHERE EXPERIENCE LIVES</p>
+          <p className="x-eyebrow x-mono" data-reveal>04 — ONDE A EXPERIÊNCIA EXISTE</p>
           <h2 className="x-echo" data-text="ACROSS" data-reveal>
-            The interface can be <em>anything people meet.</em>
+            A interface pode ser <em>qualquer ponto de encontro.</em>
           </h2>
           <p className="x-copy" data-reveal>
-            A screen, a space, an object, a gesture, a surface, an installation, a device,
-            a campaign or an environment. The medium follows the reaction we want to create.
+            Uma tela, um espaço, um objeto, um gesto, uma superfície, uma instalação, um device,
+            uma campanha ou um ambiente. O meio nasce da reação que queremos criar.
           </p>
           <p className="x-copy x-copy-punch" data-reveal>
-            Mayven combines creativity, technology, media and engineering to design how ideas are
-            experienced across screens, spaces, objects and people.
+            A Mayven combina criatividade, tecnologia, mídia e engenharia para projetar como ideias
+            são vividas através de telas, espaços, objetos e pessoas.
           </p>
           <ul className="x-tags x-mono" data-reveal>
-            {['SITES', 'WEBGL', 'AR / VR', 'VISION PRO', 'IOT', 'TOTEMS', 'INSTALLATIONS', 'EVENTS', 'MEDIA'].map((t) => (
+            {['SITES', 'WEBGL', 'AR / VR', 'VISION PRO', 'IOT', 'TOTENS', 'INSTALAÇÕES', 'EVENTOS', 'MEDIA'].map((t) => (
               <li key={t}>{t}</li>
             ))}
           </ul>
@@ -639,7 +639,7 @@ export default function Journey() {
 
         {/* 06 — METHOD */}
         <Chapter id="c-method" vh={300} className="x-method">
-          <p className="x-eyebrow x-mono">05 — PROCESS · FROM RESPONSE TO SYSTEM</p>
+          <p className="x-eyebrow x-mono">05 — PROCESS · DA RESPOSTA AO SISTEMA</p>
           <div className="x-method-grid">
             <div className="x-station" key={methodIdx}>
               <span className="x-station-num x-mono">{String(methodIdx + 1).padStart(2, '0')} / {String(METHOD.length).padStart(2, '0')}</span>
@@ -655,26 +655,26 @@ export default function Journey() {
             </ol>
           </div>
           <p className="x-note x-mono">
-            WE START WITH THE HUMAN RESPONSE, THEN DEFINE THE TECHNOLOGY REQUIRED TO MAKE IT REAL.
+            COMEÇAMOS PELA RESPOSTA HUMANA. DEPOIS DEFINIMOS A TECNOLOGIA NECESSÁRIA.
           </p>
         </Chapter>
 
-        {/* 06 — SELECTED SIGNALS */}
+        {/* 06 — PROJETOS */}
         <Chapter id="c-signals" vh={220} className="x-signals">
-          <p className="x-eyebrow x-mono" data-reveal>06 — WORK FRAMEWORK</p>
+          <p className="x-eyebrow x-mono" data-reveal>06 — FRAMEWORK DE PROJETOS</p>
           <h2 className="x-echo" data-text="WORK" data-reveal>
-            Work is shown through <em>what people experience.</em>
+            Um projeto começa pelo que <em>as pessoas vivem.</em>
           </h2>
           <p className="x-copy" data-reveal>
-            Every case is structured by context, experience, interaction, technology and impact.
-            The stack matters, but only after the human moment is clear.
+            Cada case é contado por contexto, experiência, interação, tecnologia e impacto.
+            A stack importa, mas só depois que o momento humano está claro.
           </p>
           <div className="x-signal-row" data-reveal>
             {SIGNALS.map((s, i) => (
               <article key={s.t} data-x="">
                 <span className="x-mono">S_{String(i + 1).padStart(2, '0')} · {s.k}</span>
                 <h3>{s.t}</h3>
-                <b className="x-mono">CONTEXT · EXPERIENCE · INTERACTION · TECHNOLOGY · IMPACT</b>
+                <b className="x-mono">CONTEXTO · EXPERIÊNCIA · INTERAÇÃO · TECNOLOGIA · IMPACTO</b>
               </article>
             ))}
           </div>
@@ -684,14 +684,14 @@ export default function Journey() {
         <Chapter id="c-operation" vh={200} className="x-operation">
           <p className="x-eyebrow x-mono" data-reveal>07 — MANIFESTO</p>
           <h2 className="x-echo" data-text="FELT" data-reveal>
-            Technology should not sit <em>between people and the moment.</em>
+            A tecnologia não deve ficar <em>entre a pessoa e o momento.</em>
           </h2>
           <p className="x-copy" data-reveal>
-            It should make the interaction feel natural, the response feel immediate,
-            the story feel alive, the environment feel aware and the idea feel real.
+            Ela deve fazer a interação parecer natural, a resposta parecer imediata,
+            a história parecer viva, o ambiente parecer atento e a ideia parecer real.
           </p>
           <p className="x-copy x-copy-punch" data-reveal>
-            Because technology is not what people remember. <strong>The experience is.</strong>
+            Porque tecnologia não é o que as pessoas lembram. <strong>A experiência é.</strong>
           </p>
           <ul className="x-tags x-mono" data-reveal>
             {['MAKE IT FELT', 'NATURAL RESPONSE', 'LIVE STORY', 'AWARE SPACE', 'REAL IDEA'].map((t) => (
@@ -702,21 +702,21 @@ export default function Journey() {
 
         {/* 08 — FINAL CTA */}
         <Chapter id="c-cta" vh={170} className="x-cta">
-          <p className="x-eyebrow x-mono" data-reveal>08 — START WITH THE FEELING</p>
+          <p className="x-eyebrow x-mono" data-reveal>08 — COMEÇAR PELA SENSAÇÃO</p>
           <h2 data-reveal>
-            What should <em>people feel?</em>
+            O que as pessoas <em>precisam sentir?</em>
           </h2>
           <p className="x-copy" data-reveal>
-            Tell us the reaction, behavior or transformation you want to create.
-            We will design the experience and determine the technology required to make it real.
+            Conte a reação, o comportamento ou a transformação que você quer criar.
+            A gente desenha a experiência e define a tecnologia necessária para torná-la real.
           </p>
           <div className="x-hero-ctas" data-reveal>
-            <a className="x-btn x-btn-solid" href="mailto:hello@mayven.com.br" data-x="">Create an experience</a>
-            <a className="x-btn" href="mailto:hello@mayven.com.br" data-x="">Start with the feeling</a>
+            <a className="x-btn x-btn-solid" href="mailto:hello@mayven.com.br" data-x="">Criar uma experiência</a>
+            <a className="x-btn" href="mailto:hello@mayven.com.br" data-x="">Começar pela sensação</a>
           </div>
           <footer className="x-foot" data-reveal>
             <div>
-              <p className="x-mono">CONTACT</p>
+              <p className="x-mono">CONTATO</p>
               <a href="mailto:hello@mayven.com.br">hello@mayven.com.br</a>
             </div>
             <div>
@@ -731,7 +731,7 @@ export default function Journey() {
             <div>
               <p className="x-mono">MAYVEN</p>
               <p>Creative Tech Media Company</p>
-              <p className="x-legal">© 2026 MAYVEN — Experience is the interface.</p>
+              <p className="x-legal">© 2026 MAYVEN — A experiência é a interface.</p>
             </div>
           </footer>
         </Chapter>

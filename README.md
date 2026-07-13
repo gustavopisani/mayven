@@ -1,6 +1,6 @@
 # MAYVEN — Creative Tech Media Company
 
-Site single-page da MAYVEN. Conceito: **Experience is the interface** — a própria interface
+Site single-page da MAYVEN. Conceito: **A experiência é a interface** — a própria interface
 deixa de ser conteúdo estático e se transforma em comportamento, matéria e resposta. A tecnologia
 aparece como meio para criar experiências digitais, espaciais, conectadas, live e media através de
 telas, espaços, objetos e pessoas.
@@ -80,7 +80,7 @@ public/               só o que o site serve: brand/, vídeo-textura 720p, robot
 
 ## Pendências reais (não inventar conteúdo)
 
-- Cases reais em Selected Signals (estrutura pronta; frameworks marcados como "em construção").
+- Cases reais em Projetos (estrutura pronta; frameworks marcados como "em construção").
 - Links sociais reais no footer/menu (placeholders apontam para as homes das plataformas).
 - OG image dedicada (hoje usa o logo).
 - E-mail definitivo (placeholder: hello@mayven.com.br).

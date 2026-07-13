@@ -9,7 +9,7 @@ These files are generated from `assets/video/Video-Project-12.mp4` and wired int
 - `mayven-hero-poster-desktop.webp`
 - `mayven-hero-poster-mobile.webp`
 
-Replace them with the final approved EXPERIENCE IS THE INTERFACE films before launch if a newer edit is delivered.
+Replace them with the final approved A EXPERIÊNCIA É A INTERFACE films before launch if a newer edit is delivered.
 
 Expected final composition:
 
