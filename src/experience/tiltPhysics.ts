@@ -138,13 +138,15 @@ export function resolveMotionAccess(hasOrientationApi: boolean, permission?: Per
   return 'granted'
 }
 
-export function fragmentBudget(hints: DeviceHints = {}) {
+export function particleBudget(hints: DeviceHints = {}) {
   if (hints.reducedMotion) return 0
 
-  let budget = hints.width && hints.width < 430 ? 16 : 24
+  let budget = hints.width && hints.width < 430 ? 1200 : hints.width && hints.width < 860 ? 1500 : 2200
 
-  if (typeof hints.deviceMemory === 'number' && hints.deviceMemory <= 4) budget -= 6
-  if (typeof hints.hardwareConcurrency === 'number' && hints.hardwareConcurrency <= 4) budget -= 4
+  if (typeof hints.deviceMemory === 'number' && hints.deviceMemory <= 4) budget -= 450
+  if (typeof hints.hardwareConcurrency === 'number' && hints.hardwareConcurrency <= 4) budget -= 350
 
-  return Math.round(clamp(budget, 10, 26))
+  return Math.round(clamp(budget, 720, 2600))
 }
+
+export const fragmentBudget = particleBudget

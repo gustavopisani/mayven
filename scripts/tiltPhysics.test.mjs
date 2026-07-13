@@ -4,8 +4,8 @@ import test from 'node:test'
 import {
   applyDeadZone,
   clamp,
-  fragmentBudget,
   normalizeTilt,
+  particleBudget,
   resolveMotionAccess,
   screenModeFromAngle,
   smoothVector,
@@ -84,8 +84,8 @@ test('permission resolution covers granted, denied, unsupported and error states
   assert.equal(resolveMotionAccess(true, 'error'), 'error')
 })
 
-test('fragment budget degrades for weaker devices and reduced motion', () => {
-  assert.equal(fragmentBudget({ reducedMotion: true }), 0)
-  assert.ok(fragmentBudget({ width: 390, deviceMemory: 2, hardwareConcurrency: 2 }) <= 12)
-  assert.ok(fragmentBudget({ width: 1200, deviceMemory: 8, hardwareConcurrency: 8 }) >= 20)
+test('particle budget degrades for weaker devices and reduced motion', () => {
+  assert.equal(particleBudget({ reducedMotion: true }), 0)
+  assert.ok(particleBudget({ width: 390, deviceMemory: 2, hardwareConcurrency: 2 }) <= 800)
+  assert.ok(particleBudget({ width: 1200, deviceMemory: 8, hardwareConcurrency: 8 }) >= 2000)
 })
