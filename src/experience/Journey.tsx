@@ -3,11 +3,119 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
 import { CH, detectQuality, xstore } from './store'
+import HeroPhysicsExperience from './HeroPhysicsExperience'
 import './experience.css'
 
 gsap.registerPlugin(ScrollTrigger)
 
 const World = lazy(() => import('./World'))
+
+const HERO_FILMS = {
+  desktop: {
+    webm: '/assets/video/mayven-hero-desktop.webm',
+    mp4: '/assets/video/mayven-hero-desktop.mp4',
+    poster: '/assets/video/mayven-hero-poster-desktop.webp',
+  },
+  mobile: {
+    webm: '/assets/video/mayven-hero-mobile.webm',
+    mp4: '/assets/video/mayven-hero-mobile.mp4',
+    poster: '/assets/video/mayven-hero-poster-mobile.webp',
+  },
+} as const
+
+function useHeroVariant() {
+  const getVariant = () => {
+    if (typeof window === 'undefined') return 'desktop' as const
+    return window.matchMedia('(max-width: 860px), (orientation: portrait)').matches ? 'mobile' : 'desktop'
+  }
+  const [variant, setVariant] = useState<'desktop' | 'mobile'>(getVariant)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 860px), (orientation: portrait)')
+    const update = () => setVariant(mq.matches ? 'mobile' : 'desktop')
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+  return variant
+}
+
+function usePrefersReducedMotion() {
+  const getReduced = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const [reduced, setReduced] = useState(getReduced)
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => setReduced(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+  return reduced
+}
+
+function HeroFilm() {
+  const variant = useHeroVariant()
+  const reduced = usePrefersReducedMotion()
+  const film = HERO_FILMS[variant]
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [ready, setReady] = useState(false)
+  const [blocked, setBlocked] = useState(false)
+
+  useEffect(() => {
+    setReady(false)
+    setBlocked(false)
+  }, [variant])
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video || reduced) return
+    let inView = true
+    const syncPlayback = () => {
+      if (document.hidden || !inView) {
+        video.pause()
+        return
+      }
+      video.play().then(() => setBlocked(false)).catch(() => setBlocked(true))
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting
+        syncPlayback()
+      },
+      { threshold: 0.01 },
+    )
+    io.observe(video)
+    document.addEventListener('visibilitychange', syncPlayback)
+    syncPlayback()
+    return () => {
+      io.disconnect()
+      document.removeEventListener('visibilitychange', syncPlayback)
+      video.pause()
+    }
+  }, [reduced, variant])
+
+  return (
+    <div className={`x-hero-film ${ready ? 'is-ready' : ''} ${blocked ? 'is-blocked' : ''}`} aria-hidden="true">
+      <img className="x-hero-poster" src={film.poster} alt="" decoding="async" />
+      {!reduced && (
+        <video
+          key={variant}
+          ref={videoRef}
+          muted
+          loop
+          playsInline
+          autoPlay
+          preload="metadata"
+          poster={film.poster}
+          onLoadedData={() => setReady(true)}
+          onCanPlay={() => setReady(true)}
+        >
+          <source src={film.webm} type="video/webm" />
+          <source src={film.mp4} type="video/mp4" />
+        </video>
+      )}
+    </div>
+  )
+}
 
 /* =====================================================================
    THE JOURNEY — the DOM layer of the experience. Semantic content in
@@ -18,41 +126,41 @@ const World = lazy(() => import('./World'))
 /* ---------------- content (fonte de verdade: plataforma de marca aprovada) ---------------- */
 
 const SYSTEMS = [
-  { t: 'Brand & Digital Experiences', d: 'Posicionamento, identidade, sites, experiências imersivas, interfaces, motion e 3D.' },
-  { t: 'Commerce & Growth', d: 'E-commerce, jornadas de conversão, landing pages, campanhas, mídia e otimização.' },
-  { t: 'Platforms & Integrations', d: 'Plataformas, aplicativos, APIs, integrações e experiências conectadas.' },
-  { t: 'Sales & Relationship Systems', d: 'CRM, WhatsApp Business, automações comerciais e integrações de vendas.' },
-  { t: 'Content & Media Operations', d: 'Estratégia editorial, criação, gestão de canais, campanhas e distribuição.' },
-  { t: 'AI & Automation', d: 'Agentes, IA aplicada, automações, personalização e experiências generativas.' },
+  { t: 'Immersive Brand Worlds', d: 'Universos digitais, narrativas interativas, motion, 3D e interfaces que fazem a marca ser sentida.' },
+  { t: 'Web Experiences & Platforms', d: 'Sites, plataformas, portais e jornadas digitais desenhadas como experiências, não páginas estáticas.' },
+  { t: 'Spatial & Connected Experiences', d: 'AR, VR, Vision Pro, IoT, totens, instalações e ativações que conectam físico e digital.' },
+  { t: 'Content & Media Engines', d: 'Filmes, conteúdo, mídia e distribuição trabalhando juntos para transformar atenção em presença.' },
+  { t: 'Commerce & Growth Systems', d: 'Experiências de conversão, e-commerce, CRM, campanhas e automações que mantêm o desejo em movimento.' },
+  { t: 'AI & Generative Interfaces', d: 'IA aplicada, agentes, personalização e protótipos criativos para tornar ideias ambiciosas navegáveis.' },
 ]
 
 const METHOD = [
-  { t: 'Decode', d: 'Mercado, concorrência, público, contexto e percepção atual.' },
-  { t: 'Define', d: 'Posicionamento, narrativa, proposta de valor e direcionamento.' },
-  { t: 'Design', d: 'Identidade, interface, experiência, conteúdo e direção visual.' },
-  { t: 'Engineer', d: 'Tecnologia, plataformas, motion, WebGL, IA, integrações e automações.' },
-  { t: 'Distribute', d: 'Conteúdo, mídia, canais, campanhas e ativação.' },
-  { t: 'Learn', d: 'Dados, performance, comportamento e otimização contínua.' },
+  { t: 'Feel', d: 'Definimos a sensação que a experiência precisa deixar na memória.' },
+  { t: 'Imagine', d: 'Transformamos ambição em narrativa, direção visual e possibilidades de interação.' },
+  { t: 'Design', d: 'Criamos a jornada, a interface, o ritmo, o conteúdo e os momentos de surpresa.' },
+  { t: 'Engineer', d: 'Construímos a camada invisível: WebGL, plataformas, IA, mídia, integrações e dispositivos.' },
+  { t: 'Launch', d: 'Ativamos a experiência nos canais, espaços e contextos em que ela precisa viver.' },
+  { t: 'Evolve', d: 'Medimos comportamento, aprendemos com o público e expandimos o sistema continuamente.' },
 ]
 
 const SIGNALS = [
-  { t: 'Brand Recode', k: 'BRAND & EXPERIENCE' },
-  { t: 'Web Experience', k: 'WEBGL & MOTION' },
-  { t: 'Content Engine', k: 'MEDIA OPERATIONS' },
-  { t: 'Creative Tech Prototype', k: 'R&D' },
+  { t: 'Impossible Launch Film', k: 'CINEMATIC EXPERIENCE' },
+  { t: 'Interactive Web World', k: 'WEBGL & MOTION' },
+  { t: 'Connected Space Prototype', k: 'SPATIAL TECH' },
+  { t: 'Media Experience Engine', k: 'CONTENT & DISTRIBUTION' },
 ]
 /* Cases reais entram aqui quando existirem — estrutura pronta, sem inventar
    clientes, métricas ou resultados. */
 
 const MENU = [
-  { id: 'c-manifesto', n: '01', t: 'Manifesto' },
-  { id: 'c-invisible', n: '02', t: 'The Invisible Work' },
-  { id: 'c-build', n: '03', t: 'What We Build' },
-  { id: 'c-immersive', n: '04', t: 'Immersive & Physical' },
-  { id: 'c-method', n: '05', t: 'Method' },
-  { id: 'c-signals', n: '06', t: 'Selected Signals' },
-  { id: 'c-operation', n: '07', t: 'Operation' },
-  { id: 'c-cta', n: '08', t: 'Contact' },
+  { id: 'c-manifesto', n: '01', t: 'Feel the Impossible' },
+  { id: 'c-invisible', n: '02', t: 'Invisible Work' },
+  { id: 'c-build', n: '03', t: 'What We Create' },
+  { id: 'c-immersive', n: '04', t: 'Experience Territories' },
+  { id: 'c-method', n: '05', t: 'Process' },
+  { id: 'c-signals', n: '06', t: 'Selected Experiences' },
+  { id: 'c-operation', n: '07', t: 'Possibilities' },
+  { id: 'c-cta', n: '08', t: 'Bring an Ambition' },
 ]
 
 
@@ -198,7 +306,7 @@ function XNav() {
         <p className="x-nav-tag x-mono">CREATIVE TECH MEDIA COMPANY</p>
         <div className="x-nav-right">
           <a className="x-nav-cta x-mono" href="#c-cta" onClick={go('c-cta')}>
-            START A PROJECT
+            BRING US THE IMPOSSIBLE
           </a>
           <button ref={btn} className="x-menu-btn x-mono" aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen(!open)}>
             {open ? 'FECHAR' : 'MENU'}
@@ -279,10 +387,27 @@ function useReveals(scope: React.RefObject<HTMLElement>) {
 /* ---------------- the journey ---------------- */
 export default function Journey() {
   const [booted, setBooted] = useState(false)
+  const [worldMounted, setWorldMounted] = useState(false)
   const [worldOn, setWorldOn] = useState(true)
   const rootRef = useRef<HTMLDivElement>(null)
   const quality = useRef(detectQuality())
   xstore.quality = quality.current
+
+  useEffect(() => {
+    const ready = window.setTimeout(() => {
+      xstore.ready = true
+      setBooted(true)
+      window.dispatchEvent(new Event('x:ready'))
+    }, 80)
+    const mountWorld = () => setWorldMounted(true)
+    const worldDelay = window.setTimeout(mountWorld, 1800)
+    window.addEventListener('scroll', mountWorld, { once: true, passive: true })
+    return () => {
+      window.clearTimeout(ready)
+      window.clearTimeout(worldDelay)
+      window.removeEventListener('scroll', mountWorld)
+    }
+  }, [])
 
   /* master scroll: lenis + one progress trigger driving the world AND the theme.
      Theme uses hysteresis on the same progress — the boundary can never oscillate. */
@@ -335,14 +460,23 @@ export default function Journey() {
 
   useReveals(rootRef as React.RefObject<HTMLElement>)
 
-  /* hero intro after loader + kinetic letters chasing the cursor */
+  /* hero intro + subtle depth */
   useEffect(() => {
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
     const run = () => {
+      if (reducedMotion) {
+        gsap.set('.x-hero-title span, .x-hero .x-fade', { opacity: 1, y: 0, yPercent: 0 })
+        return
+      }
       gsap.fromTo('.x-hero-title span', { yPercent: 115 }, { yPercent: 0, stagger: 0.055, duration: 1.05, ease: 'power4.out', delay: 0.1 })
       gsap.fromTo('.x-hero .x-fade', { opacity: 0, y: 24 }, { opacity: 1, y: 0, stagger: 0.09, duration: 0.7, delay: 0.7 })
     }
     if (xstore.ready) run()
     else window.addEventListener('x:ready', run, { once: true })
+
+    if (reducedMotion) {
+      return () => window.removeEventListener('x:ready', run)
+    }
 
     const letters = gsap.utils.toArray<HTMLElement>('.x-hero-title span')
     const quick = letters.map((el) => ({
@@ -358,39 +492,24 @@ export default function Journey() {
     }
     window.addEventListener('mousemove', onMove, { passive: true })
 
-    /* hero media reveal — the cursor uncovers the footage, with a lagging soft halo */
-    const reveal = document.querySelector<HTMLElement>('.x-reveal')
-    let rafId = 0
-    if (reveal && !matchMedia('(pointer: coarse)').matches) {
-      const pos = { x1: innerWidth / 2, y1: innerHeight / 2, x2: innerWidth / 2, y2: innerHeight / 2, r: 0 }
-      let tx = pos.x1
-      let ty = pos.y1
-      const onPointer = (e: MouseEvent) => {
-        tx = e.clientX
-        ty = e.clientY
-      }
-      window.addEventListener('mousemove', onPointer, { passive: true })
-      const loop = () => {
-        const speed = Math.hypot(tx - pos.x1, ty - pos.y1)
-        pos.x1 += (tx - pos.x1) * 0.22
-        pos.y1 += (ty - pos.y1) * 0.22
-        pos.x2 += (tx - pos.x2) * 0.07
-        pos.y2 += (ty - pos.y2) * 0.07
-        const targetR = xstore.p < 0.07 ? Math.min(300, 170 + speed * 2.4) : 0 // seals shut once you leave the hero
-        pos.r += (targetR - pos.r) * 0.1
-        reveal.style.setProperty('--r1x', `${pos.x1}px`)
-        reveal.style.setProperty('--r1y', `${pos.y1}px`)
-        reveal.style.setProperty('--r2x', `${pos.x2}px`)
-        reveal.style.setProperty('--r2y', `${pos.y2}px`)
-        reveal.style.setProperty('--rr', `${pos.r}px`)
-        rafId = requestAnimationFrame(loop)
-      }
-      rafId = requestAnimationFrame(loop)
+    /* first-scroll cinematic transition */
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const ctx = gsap.context(() => {
+        gsap.timeline({
+          scrollTrigger: {
+            trigger: '#c-hero',
+            start: 'top top',
+            end: 'bottom top',
+            scrub: true,
+          },
+        })
+          .to('.x-hero-film video, .x-hero-poster', { scale: 1.08, yPercent: -3, ease: 'none' }, 0)
+          .to('.x-hero-copy', { y: -42, opacity: 0.18, ease: 'none' }, 0.08)
+      }, rootRef)
       return () => {
         window.removeEventListener('x:ready', run)
         window.removeEventListener('mousemove', onMove)
-        window.removeEventListener('mousemove', onPointer)
-        cancelAnimationFrame(rafId)
+        ctx.revert()
       }
     }
     return () => {
@@ -406,8 +525,7 @@ export default function Journey() {
 
   return (
     <div ref={rootRef} className="x-root">
-      {!booted && <XLoader onDone={() => setBooted(true)} />}
-      {gl && (
+      {gl && worldMounted && (
         <Suspense fallback={null}>
           <World active={worldOn && booted} />
         </Suspense>
@@ -419,29 +537,22 @@ export default function Journey() {
       <main className="x-main">
         {/* 01 — HERO */}
         <Chapter id="c-hero" vh={130} className="x-hero">
-          {gl && (
-            <div className="x-reveal" aria-hidden="true">
-              {/* mídia do reveal — troque o src quando definirem a imagem/vídeo final */}
-              <video src="/assets/videos/mayven-signal-source.mp4" muted loop playsInline autoPlay preload="metadata" />
+          <HeroFilm />
+          <div className="x-hero-copy">
+            <p className="x-kicker x-mono x-fade">Creative Tech Media Company</p>
+            <h1 className="x-hero-title" aria-label="Feel the impossible.">
+              <span>Feel the </span>
+              <span>impossible.</span>
+            </h1>
+            <p className="x-hero-sub x-fade">
+              We transform ideas into experiences people can enter, touch, feel and remember.
+            </p>
+            <div className="x-hero-ctas x-fade">
+              <a className="x-btn x-btn-solid" href="#c-cta" data-x="">Bring us the impossible</a>
+              <a className="x-btn" href="#c-manifesto" data-x="">Explore our experiences</a>
             </div>
-          )}
-          <p className="x-kicker x-mono x-fade">CREATIVE TECH MEDIA COMPANY — SP/BR</p>
-          <h1 className="x-hero-title" aria-label="MAYVEN">
-            {'MAYVEN'.split('').map((c, i) => (
-              <span key={i} aria-hidden="true">{c}</span>
-            ))}
-          </h1>
-          <p className="x-hero-line x-fade">
-            Presença digital para marcas que <em>não nasceram</em> para parecer comuns.
-          </p>
-          <p className="x-hero-sub x-fade">
-            Estratégia, mídia, IA, design e engenharia criativa para construir marcas, conteúdos e
-            experiências digitais de alta performance.
-          </p>
-          <div className="x-hero-ctas x-fade">
-            <a className="x-btn x-btn-solid" href="#c-cta" data-x="">Start a project</a>
-            <a className="x-btn" href="#c-manifesto" data-x="">Enter the system ↓</a>
           </div>
+          <HeroPhysicsExperience headline="FEEL THE IMPOSSIBLE." />
           <div className="x-scrollcue x-fade" aria-hidden="true">
             <span className="x-mono">SCROLL</span>
             <i />
@@ -450,17 +561,16 @@ export default function Journey() {
 
         {/* 02 — MANIFESTO */}
         <Chapter id="c-manifesto" vh={240} className="x-manifesto">
-          <p className="x-eyebrow x-mono" data-reveal>01 — MANIFESTO</p>
-          <h2 className="x-echo" data-text="INVISÍVEL" data-reveal>
-            O que move uma marca é <em>invisível.</em>
+          <p className="x-eyebrow x-mono" data-reveal>01 — FEEL THE IMPOSSIBLE</p>
+          <h2 className="x-echo" data-text="FEEL" data-reveal>
+            O que significa <em>sentir o impossível?</em>
           </h2>
           <p className="x-copy" data-reveal>
-            O público vê o resultado: a marca forte, o site memorável, o conteúdo que aparece na hora certa.
-            Ninguém vê a infraestrutura — estratégia, design, tecnologia, mídia, dados e operação — trabalhando
-            embaixo da superfície, da tela ao espaço físico.
+            Significa entrar em uma experiência em que a tecnologia desaparece e a sensação permanece.
+            A pessoa não lembra de uma ferramenta, de um formato ou de uma tela. Ela lembra do que viveu.
           </p>
           <p className="x-copy x-copy-punch" data-reveal>
-            A MAYVEN constrói <strong>o sistema por trás do sinal.</strong>
+            A MAYVEN transforma criatividade, mídia e engenharia em <strong>presença memorável.</strong>
           </p>
         </Chapter>
 
@@ -468,12 +578,11 @@ export default function Journey() {
         <Chapter id="c-invisible" vh={230} className="x-invisible">
           <p className="x-eyebrow x-mono" data-reveal>02 — THE INVISIBLE WORK</p>
           <h2 className="x-echo" data-text="SYSTEM" data-reveal>
-            A diferença está na <em>camada invisível.</em>
+            O encantamento precisa de <em>estrutura invisível.</em>
           </h2>
           <p className="x-copy" data-reveal>
-            Você está atravessando a infraestrutura agora: cada anel, cada conduíte, cada pulso deste túnel é o
-            trabalho que ninguém vê — arquitetura, integrações, motion, engenharia — sustentando a experiência
-            que todo mundo sente.
+            Para uma experiência parecer mágica, muita coisa precisa funcionar sem aparecer: estratégia,
+            arquitetura, interface, conteúdo, mídia, dados, integrações, dispositivos e operação contínua.
           </p>
           <ul className="x-tags x-mono" data-reveal>
             {['STRATEGY', 'INTERFACE', 'MOTION', 'SYSTEMS', 'MEDIA', 'INTELLIGENCE'].map((t) => (
@@ -484,7 +593,7 @@ export default function Journey() {
 
         {/* 04 — WHAT WE BUILD */}
         <Chapter id="c-build" vh={360} className="x-build">
-          <p className="x-eyebrow x-mono">03 — WHAT WE BUILD</p>
+          <p className="x-eyebrow x-mono">03 — WHAT WE CREATE</p>
           <div className="x-build-grid">
             <span className="x-build-idx" aria-hidden="true" key={`n${buildIdx}`}>
               0{buildIdx + 1}
@@ -503,19 +612,18 @@ export default function Journey() {
               </ol>
             </div>
           </div>
-          <p className="x-note x-mono">SISTEMAS INTEGRADOS — DA CONCEPÇÃO À OPERAÇÃO. NENHUMA PEÇA SOLTA.</p>
+          <p className="x-note x-mono">FEELING FIRST. EXPERIENCE NEXT. TECHNOLOGY ONLY WHERE IT MAKES THE IMPOSSIBLE REAL.</p>
         </Chapter>
 
         {/* 05 — IMMERSIVE & PHYSICAL */}
         <Chapter id="c-immersive" vh={240} className="x-immersive">
-          <p className="x-eyebrow x-mono" data-reveal>04 — IMMERSIVE & PHYSICAL</p>
+          <p className="x-eyebrow x-mono" data-reveal>04 — EXPERIENCE TERRITORIES</p>
           <h2 className="x-echo" data-text="BEYOND" data-reveal>
-            Presença não vive <em>só na tela.</em>
+            O impossível pode viver <em>em qualquer lugar.</em>
           </h2>
           <p className="x-copy" data-reveal>
-            Projetamos e construímos experiências para o mundo inteiro conectado: realidade aumentada e
-            virtual, Apple Vision Pro, IoT, gamificação, totens interativos e soluções tecnológicas para
-            eventos — a marca presente onde o público estiver, físico ou digital.
+            Projetamos experiências digitais, espaciais e conectadas: sites, plataformas, WebGL, AR, VR,
+            Vision Pro, IoT, gamificação, instalações, totens interativos, ativações e eventos.
           </p>
           <ul className="x-tags x-mono" data-reveal>
             {['VISION PRO', 'VR / AR', 'IOT', 'GAMIFICATION', 'TOTENS', 'EVENT TECH'].map((t) => (
@@ -526,7 +634,7 @@ export default function Journey() {
 
         {/* 06 — METHOD */}
         <Chapter id="c-method" vh={300} className="x-method">
-          <p className="x-eyebrow x-mono">05 — METHOD · FROM SIGNAL TO SYSTEM</p>
+          <p className="x-eyebrow x-mono">05 — PROCESS · FROM FEELING TO SYSTEM</p>
           <div className="x-method-grid">
             <div className="x-station" key={methodIdx}>
               <span className="x-station-num x-mono">{String(methodIdx + 1).padStart(2, '0')} / 06</span>
@@ -542,19 +650,19 @@ export default function Journey() {
             </ol>
           </div>
           <p className="x-note x-mono">
-            NÃO É UMA LINHA. É UM CICLO — VOCÊ ESTÁ ATRAVESSANDO O ANEL: LEARN REALIMENTA DECODE ↺
+            NÃO COMEÇAMOS COM TECNOLOGIA. COMEÇAMOS COM O QUE A EXPERIÊNCIA PRECISA FAZER ALGUÉM SENTIR.
           </p>
         </Chapter>
 
         {/* 06 — SELECTED SIGNALS */}
         <Chapter id="c-signals" vh={220} className="x-signals">
-          <p className="x-eyebrow x-mono" data-reveal>06 — SELECTED SIGNALS</p>
-          <h2 className="x-echo" data-text="SIGNALS" data-reveal>
-            Selected <em>Signals</em>
+          <p className="x-eyebrow x-mono" data-reveal>06 — SELECTED EXPERIENCES</p>
+          <h2 className="x-echo" data-text="LIVE" data-reveal>
+            Selected <em>Experiences</em>
           </h2>
           <p className="x-copy" data-reveal>
-            Cases, protótipos e experimentos vão viver aqui. Por enquanto, esta é a forma do que construímos —
-            sem números inflados, sem cases emprestados.
+            Cases, protótipos e experimentos vão viver aqui. Por enquanto, esta é a estrutura do que a Mayven
+            está preparada para conceber, construir e operar — sem números inflados, sem cases emprestados.
           </p>
           <div className="x-signal-row" data-reveal>
             {SIGNALS.map((s, i) => (
@@ -569,13 +677,13 @@ export default function Journey() {
 
         {/* 07 — OPERATION */}
         <Chapter id="c-operation" vh={200} className="x-operation">
-          <p className="x-eyebrow x-mono" data-reveal>07 — CONTINUOUS OPERATION</p>
+          <p className="x-eyebrow x-mono" data-reveal>07 — POSSIBILITIES</p>
           <h2 className="x-echo" data-text="ALWAYS ON" data-reveal>
-            Do lançamento à <em>operação contínua.</em>
+            Uma experiência não termina <em>no lançamento.</em>
           </h2>
           <p className="x-copy" data-reveal>
-            Não entregamos um projeto e desaparecemos. Construímos a infraestrutura — e operamos o sistema:
-            tecnologia, conteúdo, mídia, canais, CRM, vendas e dados girando juntos, todos os dias.
+            Ela pode virar plataforma, conteúdo, campanha, instalação, canal, comunidade, CRM, mídia e dados.
+            Construímos o sistema para que o impossível continue vivo depois do primeiro impacto.
           </p>
           <ul className="x-tags x-mono" data-reveal>
             {['TECNOLOGIA', 'CONTEÚDO', 'MÍDIA', 'CANAIS', 'CRM', 'VENDAS', 'DADOS'].map((t) => (
@@ -586,13 +694,15 @@ export default function Journey() {
 
         {/* 08 — FINAL CTA */}
         <Chapter id="c-cta" vh={170} className="x-cta">
-          <p className="x-eyebrow x-mono" data-reveal>08 — LET’S BUILD WHAT COMES NEXT</p>
+          <p className="x-eyebrow x-mono" data-reveal>08 — BRING AN AMBITION</p>
           <h2 data-reveal>
-            Sua marca parece tão forte quanto <em>o que você entrega?</em>
+            Bring us <em>the impossible.</em>
           </h2>
-          <p className="x-copy" data-reveal>Se a resposta incomoda, talvez a gente precise conversar.</p>
+          <p className="x-copy" data-reveal>
+            Conte a ambição. A Mayven transforma em uma experiência que pessoas podem viver, tocar, sentir e lembrar.
+          </p>
           <div className="x-hero-ctas" data-reveal>
-            <a className="x-btn x-btn-solid" href="mailto:hello@mayven.com.br" data-x="">Start a project</a>
+            <a className="x-btn x-btn-solid" href="mailto:hello@mayven.com.br" data-x="">Bring us the impossible</a>
             <a className="x-btn" href="mailto:hello@mayven.com.br" data-x="">Talk to MAYVEN</a>
           </div>
           <footer className="x-foot" data-reveal>
@@ -612,7 +722,7 @@ export default function Journey() {
             <div>
               <p className="x-mono">MAYVEN</p>
               <p>Creative Tech Media Company</p>
-              <p className="x-legal">© 2026 MAYVEN — The system behind the signal.</p>
+              <p className="x-legal">© 2026 MAYVEN — Feel the impossible.</p>
             </div>
           </footer>
         </Chapter>
