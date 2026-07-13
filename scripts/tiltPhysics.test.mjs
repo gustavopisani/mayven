@@ -43,6 +43,17 @@ test('portrait tilt keeps neutral gravity down and maps gamma laterally', () => 
   assert.equal(right.y, 1)
 })
 
+test('portrait forward tilt can reverse gravity toward the top', () => {
+  const upward = normalizeTilt(
+    { beta: -28, gamma: 0 },
+    'portrait',
+    { baseY: 0.68, deadZone: 0, forwardInfluence: 1.85, maxBeta: 28 },
+  )
+
+  assert.equal(upward.x, 0)
+  assert.ok(upward.y < -0.9)
+})
+
 test('landscape tilt rotates the screen-relative vector', () => {
   const left = normalizeTilt({ beta: 20, gamma: 0 }, 'landscape-left', { deadZone: 0 })
   const right = normalizeTilt({ beta: 20, gamma: 0 }, 'landscape-right', { deadZone: 0 })

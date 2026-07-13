@@ -380,7 +380,7 @@ body[data-xtheme='light'] .x-vignette { opacity: 0; }
   overflow: hidden;
   pointer-events: none;
   contain: layout paint style;
-  touch-action: pan-y;
+  touch-action: none;
 }
 .x-physics.is-physics-on .x-physics-layer {
   pointer-events: auto;

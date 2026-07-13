@@ -113,6 +113,11 @@ type PermissionConstructor = {
   requestPermission?: () => Promise<PermissionState>
 }
 
+type LockableScreenOrientation = ScreenOrientation & {
+  lock?: (orientation: 'portrait' | 'portrait-primary') => Promise<void>
+  unlock?: () => void
+}
+
 type HeroPhysicsExperienceProps = {
   anchorSelector?: string
   copy?: Partial<HeroPhysicsCopy>
@@ -344,6 +349,7 @@ export default function HeroPhysicsExperience({
   const rafRef = useRef<number | null>(null)
   const cleanupRef = useRef<(() => void) | null>(null)
   const baselineRef = useRef<TiltSample | null>(null)
+  const unlockOrientationRef = useRef<(() => void) | null>(null)
   const sensorModeRef = useRef<SensorMode>('fallback')
   const sensorSeenRef = useRef(false)
   const targetGravityRef = useRef<GravityVector>(DOWN_GRAVITY)
@@ -356,6 +362,30 @@ export default function HeroPhysicsExperience({
       console.debug('[hero-immersion]', event)
     }
   }, [onEvent])
+
+  const releasePortraitLock = useCallback(() => {
+    unlockOrientationRef.current?.()
+    unlockOrientationRef.current = null
+  }, [])
+
+  const requestPortraitLock = useCallback(() => {
+    const orientation = screen.orientation as LockableScreenOrientation | undefined
+    if (typeof orientation?.lock !== 'function') return
+
+    const saveUnlock = () => {
+      unlockOrientationRef.current = () => {
+        try {
+          orientation.unlock?.()
+        } catch {
+          // Some browsers expose unlock but reject when the page never acquired a lock.
+        }
+      }
+    }
+
+    orientation.lock('portrait-primary').then(saveUnlock).catch(() => {
+      orientation.lock?.('portrait').then(saveUnlock).catch(() => {})
+    })
+  }, [])
 
   const disposeEngine = useCallback(() => {
     if (rafRef.current != null) {
@@ -427,6 +457,7 @@ export default function HeroPhysicsExperience({
 
     setStatus('requesting-permission')
     emit('hero_immersion_started')
+    requestPortraitLock()
 
     const access = await requestOrientationAccess()
 
@@ -450,7 +481,7 @@ export default function HeroPhysicsExperience({
 
     emit('hero_immersion_fallback_used')
     preparePhysicsRun('fallback', 'unsupported')
-  }, [emit, preparePhysicsRun])
+  }, [emit, preparePhysicsRun, requestPortraitLock])
 
   const resetExperience = useCallback(() => {
     const fallbackStatus = status === 'denied' ? 'denied' : 'unsupported'
@@ -463,16 +494,18 @@ export default function HeroPhysicsExperience({
   const exitExperience = useCallback(() => {
     emit('hero_immersion_exited')
     teardownPhysics(true)
+    releasePortraitLock()
     sensorModeRef.current = 'fallback'
     setSensorMode('fallback')
     setStatus('completed')
-  }, [emit, teardownPhysics])
+  }, [emit, releasePortraitLock, teardownPhysics])
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
     const syncMotionPreference = () => {
       if (mq.matches) {
         if (isActiveState(status)) teardownPhysics(true)
+        releasePortraitLock()
         setStatus('reduced-motion')
       } else if (status === 'reduced-motion') {
         setStatus('idle')
@@ -481,7 +514,9 @@ export default function HeroPhysicsExperience({
 
     mq.addEventListener('change', syncMotionPreference)
     return () => mq.removeEventListener('change', syncMotionPreference)
-  }, [status, teardownPhysics])
+  }, [releasePortraitLock, status, teardownPhysics])
+
+  useEffect(() => releasePortraitLock, [releasePortraitLock])
 
   useEffect(() => {
     const hero = document.getElementById('c-hero')
@@ -618,10 +653,10 @@ export default function HeroPhysicsExperience({
               screenModeFromAngle(getScreenAngle()),
               {
                 baseline: baselineRef.current,
-                baseY: 1,
+                baseY: 0.68,
                 deadZone: 0.045,
-                forwardInfluence: 0.72,
-                maxBeta: 38,
+                forwardInfluence: 1.85,
+                maxBeta: 28,
                 maxGamma: 32,
                 sensitivity: 1,
               },
