@@ -4,6 +4,7 @@ import test from 'node:test'
 import {
   applyDeadZone,
   clamp,
+  mobileQualityTier,
   normalizeTilt,
   particleBudget,
   resolveMotionAccess,
@@ -87,5 +88,12 @@ test('permission resolution covers granted, denied, unsupported and error states
 test('particle budget degrades for weaker devices and reduced motion', () => {
   assert.equal(particleBudget({ reducedMotion: true }), 0)
   assert.ok(particleBudget({ width: 390, deviceMemory: 2, hardwareConcurrency: 2 }) <= 800)
-  assert.ok(particleBudget({ width: 1200, deviceMemory: 8, hardwareConcurrency: 8 }) >= 2000)
+  assert.ok(particleBudget({ width: 390, deviceMemory: 8, hardwareConcurrency: 8 }) >= 1200)
+  assert.ok(particleBudget({ width: 1200, deviceMemory: 8, hardwareConcurrency: 8 }) >= 2200)
+})
+
+test('mobile quality tier considers hardware, dpr and runtime fps', () => {
+  assert.equal(mobileQualityTier({ width: 1200, deviceMemory: 8, hardwareConcurrency: 8, viewportFps: 60 }), 'high')
+  assert.equal(mobileQualityTier({ width: 390, deviceMemory: 4, hardwareConcurrency: 4, devicePixelRatio: 2 }), 'medium')
+  assert.equal(mobileQualityTier({ width: 360, deviceMemory: 2, hardwareConcurrency: 2, devicePixelRatio: 3, viewportFps: 42 }), 'low')
 })

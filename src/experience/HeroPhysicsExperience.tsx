@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
+  clamp,
+  mobileQualityTier,
   normalizeTilt,
   particleBudget,
   resolveMotionAccess,
@@ -460,17 +462,24 @@ export default function HeroPhysicsExperience({
     let inView = true
     let paused = false
     const nav = navigator as Navigator & { deviceMemory?: number }
-    const lowPowerBudget = particleBudget({
+    const deviceHints = {
+      devicePixelRatio: window.devicePixelRatio || 1,
       deviceMemory: nav.deviceMemory,
       hardwareConcurrency: navigator.hardwareConcurrency,
       reducedMotion: getReducedMotion(),
       width: window.innerWidth,
-    })
+    }
+    const initialTier = mobileQualityTier(deviceHints)
+    let runtimeBudget = particleBudget(deviceHints)
+    let averageFrameMs = 1000 / 60
+    let lastFrameTime = performance.now()
+    let fpsDowngraded = false
 
     const rebuildParticles = () => {
       const viewport = fitCanvasToLayer(canvas, layer)
-      particlesRef.current = buildTextParticles(anchorSelector, layer, headline, lowPowerBudget)
+      particlesRef.current = buildTextParticles(anchorSelector, layer, headline, runtimeBudget)
       layer.dataset.particleCount = String(particlesRef.current.length)
+      layer.dataset.quality = fpsDowngraded ? 'adaptive-low' : initialTier
       baselineRef.current = null
 
       return viewport
@@ -498,26 +507,106 @@ export default function HeroPhysicsExperience({
       })
     }
 
+    const applyDirectionalImpulse = (deltaX: number, deltaY: number, strength: number) => {
+      const distance = Math.max(1, Math.hypot(deltaX, deltaY))
+      const dirX = deltaX / distance
+      const dirY = deltaY / distance
+
+      particlesRef.current.forEach((particle, index) => {
+        const stagger = 0.72 + (index % 7) * 0.065
+
+        particle.vx += dirX * strength * stagger + (Math.random() - 0.5) * 1.2
+        particle.vy += dirY * strength * stagger + (Math.random() - 0.5) * 1.2
+      })
+    }
+
+    const pointerSnapshot = (event: PointerEvent) => {
+      const rect = layer.getBoundingClientRect()
+
+      return {
+        clientX: event.clientX,
+        clientY: event.clientY,
+        time: performance.now(),
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      }
+    }
+
     let pointerDown = false
+    let pointerStart: ReturnType<typeof pointerSnapshot> | null = null
+    let pointerCurrent: ReturnType<typeof pointerSnapshot> | null = null
     const steerFromPointer = (event: PointerEvent) => {
       const next = vectorFromPointer(event.clientX, event.clientY, layer.getBoundingClientRect(), 0.08)
       targetGravityRef.current = next.x === 0 && next.y === 0 ? DOWN_GRAVITY : next
     }
     const onPointerDown = (event: PointerEvent) => {
+      if (event.isPrimary === false) return
+      if (event.cancelable) event.preventDefault()
+
+      const snapshot = pointerSnapshot(event)
+
       pointerDown = true
-      layer.setPointerCapture?.(event.pointerId)
+      pointerStart = snapshot
+      pointerCurrent = snapshot
+      layer.dataset.pointer = 'holding'
+
+      try {
+        layer.setPointerCapture?.(event.pointerId)
+      } catch {
+        // Pointer capture can fail if a browser cancels the touch during rotation.
+      }
+
       steerFromPointer(event)
-      applyImpulseAt(event.clientX, event.clientY)
+      applyImpulseAt(event.clientX, event.clientY, event.pointerType === 'touch' ? 10 : 8.5)
     }
     const onPointerMove = (event: PointerEvent) => {
+      if (event.cancelable && pointerDown) event.preventDefault()
+      if (pointerDown) pointerCurrent = pointerSnapshot(event)
+
       if (sensorModeRef.current === 'fallback' || event.pointerType === 'mouse' || pointerDown) {
         steerFromPointer(event)
       }
     }
-    const onPointerUp = (event: PointerEvent) => {
+    const finishPointer = (event: PointerEvent, cancelledByBrowser = false) => {
+      if (event.cancelable) event.preventDefault()
+      const start = pointerStart
+      const current = pointerCurrent ?? pointerSnapshot(event)
+      const elapsed = start ? Math.max(1, performance.now() - start.time) : 1
+      const holdPower = start ? clamp(elapsed / 920, 0, 1) : 0
+      const deltaX = start ? current.x - start.x : 0
+      const deltaY = start ? current.y - start.y : 0
+      const swipeDistance = Math.hypot(deltaX, deltaY)
+      const swipeSpeed = swipeDistance / elapsed
+
       pointerDown = false
-      layer.releasePointerCapture?.(event.pointerId)
+      pointerStart = null
+      pointerCurrent = null
+      layer.dataset.pointer = ''
+
+      try {
+        layer.releasePointerCapture?.(event.pointerId)
+      } catch {
+        // Pointer capture may already be gone after an orientation or app switch.
+      }
+
+      if (cancelledByBrowser) return
+
+      if (holdPower > 0.18) {
+        applyImpulseAt(current.clientX, current.clientY, 10 + holdPower * 18)
+      }
+
+      if (swipeDistance > 38 && swipeSpeed > 0.42) {
+        const strength = clamp(swipeSpeed * 22, 6, 18)
+
+        applyDirectionalImpulse(deltaX, deltaY, strength)
+        targetGravityRef.current = {
+          x: clamp(deltaX / Math.max(1, swipeDistance), -1, 1),
+          y: clamp(deltaY / Math.max(1, swipeDistance), -1, 1),
+        }
+      }
     }
+    const onPointerUp = (event: PointerEvent) => finishPointer(event)
+    const onPointerCancel = (event: PointerEvent) => finishPointer(event, true)
 
     let sensorFallbackTimer: number | null = null
     let sensorCleanup: (() => void) | null = null
@@ -603,7 +692,7 @@ export default function HeroPhysicsExperience({
     layer.addEventListener('pointerdown', onPointerDown)
     layer.addEventListener('pointermove', onPointerMove)
     layer.addEventListener('pointerup', onPointerUp)
-    layer.addEventListener('pointercancel', onPointerUp)
+    layer.addEventListener('pointercancel', onPointerCancel)
 
     cleanupRef.current = () => {
       sensorCleanup?.()
@@ -614,22 +703,49 @@ export default function HeroPhysicsExperience({
       layer.removeEventListener('pointerdown', onPointerDown)
       layer.removeEventListener('pointermove', onPointerMove)
       layer.removeEventListener('pointerup', onPointerUp)
-      layer.removeEventListener('pointercancel', onPointerUp)
+      layer.removeEventListener('pointercancel', onPointerCancel)
     }
 
     const render = () => {
       if (!paused) {
-        const smoothed = smoothVector(currentGravityRef.current, targetGravityRef.current, lowPowerBudget <= 900 ? 0.08 : 0.13)
+        const now = performance.now()
+        const frameMs = now - lastFrameTime
+        lastFrameTime = now
+        averageFrameMs = frameMs < 140 ? averageFrameMs * 0.94 + frameMs * 0.06 : 1000 / 60
+
+        if (!fpsDowngraded && averageFrameMs > 24 && runtimeBudget > 900) {
+          runtimeBudget = Math.max(720, Math.round(runtimeBudget * 0.72))
+          particlesRef.current = particlesRef.current.slice(0, runtimeBudget)
+          layer.dataset.particleCount = String(particlesRef.current.length)
+          layer.dataset.quality = 'adaptive-low'
+          fpsDowngraded = true
+        }
+
+        const lowPower = runtimeBudget <= 900
+        const smoothed = smoothVector(currentGravityRef.current, targetGravityRef.current, lowPower ? 0.08 : 0.13)
         currentGravityRef.current = smoothed
 
         context.setTransform(viewport.dpr, 0, 0, viewport.dpr, 0, 0)
         context.clearRect(0, 0, viewport.width, viewport.height)
 
-        const gravityScale = lowPowerBudget <= 900 ? 0.12 : 0.16
-        const damping = lowPowerBudget <= 900 ? 0.989 : 0.993
+        const gravityScale = lowPower ? 0.12 : 0.16
+        const damping = lowPower ? 0.989 : 0.993
         const bounce = 0.58
+        const activePointer = pointerDown ? pointerCurrent : null
+        const holdPower = pointerDown && pointerStart ? clamp((now - pointerStart.time) / 920, 0, 1) : 0
 
         particlesRef.current.forEach((particle) => {
+          if (activePointer && holdPower > 0) {
+            const dx = activePointer.x - particle.x
+            const dy = activePointer.y - particle.y
+            const distance = Math.max(36, Math.hypot(dx, dy))
+            const reach = Math.min(1, distance / Math.max(180, viewport.width * 0.34))
+            const pull = holdPower * (lowPower ? 0.011 : 0.016) * reach
+
+            particle.vx += (dx / distance) * pull
+            particle.vy += (dy / distance) * pull
+          }
+
           particle.vx = (particle.vx + smoothed.x * gravityScale) * damping
           particle.vy = (particle.vy + smoothed.y * gravityScale) * damping
           particle.x += particle.vx

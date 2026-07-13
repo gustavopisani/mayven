@@ -374,13 +374,20 @@ body[data-xtheme='light'] .x-vignette { opacity: 0; }
   z-index: 12;
   pointer-events: none;
 }
+.x-physics.is-physics-on {
+  position: fixed;
+  z-index: 120;
+}
 .x-physics-layer {
   position: absolute;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
   contain: layout paint style;
+  overscroll-behavior: contain;
   touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .x-physics.is-physics-on .x-physics-layer {
   pointer-events: auto;
@@ -421,6 +428,7 @@ body[data-xtheme='light'] .x-vignette { opacity: 0; }
   pointer-events: auto;
 }
 .x-physics-trigger {
+  min-height: 44px;
   min-width: 150px;
 }
 .x-physics-status {
@@ -453,6 +461,7 @@ body[data-xtheme='light'] .x-vignette { opacity: 0; }
   border: 1px solid rgba(244, 241, 234, 0.42);
   background: rgba(5, 5, 6, 0.28);
   color: var(--xw);
+  min-height: 44px;
   padding: 11px 13px;
   transition: background 0.25s, border-color 0.25s, color 0.25s;
 }
@@ -559,7 +568,7 @@ body[data-xtheme='light'] .x-btn:hover { color: var(--xw); }
     left: 22px;
     right: 22px;
     top: auto;
-    bottom: calc(34px + env(safe-area-inset-bottom));
+    bottom: calc(22px + env(safe-area-inset-bottom));
     max-width: none;
     gap: 10px;
   }
@@ -572,6 +581,22 @@ body[data-xtheme='light'] .x-btn:hover { color: var(--xw); }
   }
   .x-physics-hint {
     flex: 1 1 180px;
+  }
+}
+@media (max-width: 860px) and (orientation: landscape) and (max-height: 520px) {
+  .x-hero-copy {
+    padding-top: 9vh;
+  }
+  .x-hero-title {
+    font-size: clamp(42px, 12vh, 72px);
+  }
+  .x-physics-console {
+    left: calc(18px + env(safe-area-inset-left));
+    right: calc(18px + env(safe-area-inset-right));
+    bottom: calc(14px + env(safe-area-inset-bottom));
+  }
+  .x-physics-hint span {
+    display: none;
   }
 }
 

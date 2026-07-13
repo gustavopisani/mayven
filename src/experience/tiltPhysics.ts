@@ -22,10 +22,14 @@ export type TiltOptions = {
 
 export type MotionAccess = 'granted' | 'denied' | 'unsupported' | 'error'
 
+export type QualityTier = 'high' | 'medium' | 'low'
+
 export type DeviceHints = {
+  devicePixelRatio?: number
   deviceMemory?: number
   hardwareConcurrency?: number
   reducedMotion?: boolean
+  viewportFps?: number
   width?: number
 }
 
@@ -138,13 +142,49 @@ export function resolveMotionAccess(hasOrientationApi: boolean, permission?: Per
   return 'granted'
 }
 
+export function mobileQualityTier(hints: DeviceHints = {}): QualityTier {
+  if (hints.reducedMotion) return 'low'
+
+  const memory = hints.deviceMemory
+  const cores = hints.hardwareConcurrency
+  const dpr = hints.devicePixelRatio ?? 1
+  const width = hints.width ?? 1024
+  const fps = hints.viewportFps
+  let score = 0
+
+  score += memory == null ? 2 : memory >= 6 ? 2 : memory >= 4 ? 1 : -1
+  score += cores == null ? 2 : cores >= 8 ? 2 : cores >= 4 ? 1 : -1
+
+  if (width >= 860) score += 1
+  if (width < 390) score -= 1
+  if (dpr >= 3 && width < 860) score -= 1
+
+  if (typeof fps === 'number') {
+    if (fps < 45) score -= 2
+    else if (fps < 55) score -= 1
+    else if (fps >= 58) score += 1
+  }
+
+  if (score >= 4) return 'high'
+  if (score >= 2) return 'medium'
+
+  return 'low'
+}
+
 export function particleBudget(hints: DeviceHints = {}) {
   if (hints.reducedMotion) return 0
 
-  let budget = hints.width && hints.width < 430 ? 1200 : hints.width && hints.width < 860 ? 1500 : 2200
+  const tier = mobileQualityTier(hints)
+  const width = hints.width ?? 1024
+  const compact = width < 430
+  const mobile = width < 860
+  let budget = 1100
 
-  if (typeof hints.deviceMemory === 'number' && hints.deviceMemory <= 4) budget -= 450
-  if (typeof hints.hardwareConcurrency === 'number' && hints.hardwareConcurrency <= 4) budget -= 350
+  if (tier === 'high') budget = mobile ? (compact ? 1400 : 1700) : 2400
+  if (tier === 'medium') budget = mobile ? (compact ? 1080 : 1300) : 1800
+  if (tier === 'low') budget = mobile ? (compact ? 720 : 840) : 1100
+
+  if (mobile && (hints.devicePixelRatio ?? 1) >= 3) budget -= 120
 
   return Math.round(clamp(budget, 720, 2600))
 }
