@@ -28,7 +28,7 @@ function lightAt(p: number) {
       1 - THREE.MathUtils.smoothstep(p, b - f, b + f * 0.3),
     )
   }
-  return Math.max(zone(CH.presenca[0], CH.presenca[1]), zone(CH.cases[0], CH.cases[1]))
+  return Math.max(zone(CH.manifesto[0], CH.presenca[1]), zone(CH.cases[0], CH.cases[1]))
 }
 
 /* ---------- HERO + CTA: the sheet stack — layered interface matter ---------- */

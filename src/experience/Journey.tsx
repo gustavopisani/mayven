@@ -121,12 +121,16 @@ function HeroFilm() {
 
 /* =====================================================================
    THE JOURNEY — camada DOM da experiência. Conteúdo semântico em fluxo
-   normal; o mundo WebGL fixo viaja atrás. Narrativa: a Mayven cria
-   presença → presença diferencia → a marca também pode ser vivida →
-   3 manifestações → método → cases → convite.
+   normal; o mundo WebGL fixo viaja atrás. Narrativa: manifesto (o mesmo
+   de sempre não basta) → a Mayven cria presença → presença diferencia →
+   a marca também pode ser vivida → 3 manifestações → método → cases →
+   convite.
    ===================================================================== */
 
 /* ---------------- conteúdo (briefing aprovado — não trocar por clichês) ---------------- */
+
+/* frases do manifesto — recuperadas da versão anterior da home (componente Manifesto) */
+const SLAMS = ['Posts iguais.', 'Sites iguais.', 'Campanhas iguais.', 'Marcas esquecíveis.']
 
 const TYPES = [
   {
@@ -348,6 +352,102 @@ function Chapter({
   )
 }
 
+/* ---------------- manifesto: interlúdio bone entre o hero e "O que fazemos" ----------------
+   Efeito recuperado da versão anterior: frases "slam" surgem uma a uma, dirigidas pelo
+   scroll (track alto + view sticky + timeline scrubada — sem pin do GSAP, que treme no
+   iOS). Desktop mantém o slam original (escala + skew + blur); mobile anima o mesmo
+   conceito só com transform/opacity (compositor-friendly no Safari iOS / Chrome Android),
+   com ritmo e amplitudes mais curtos. Reduced motion: sem timeline, fluxo editorial
+   estático (classe is-anim ausente). */
+function ManifestoChapter() {
+  const secRef = useRef<HTMLElement>(null)
+  const variant = useHeroVariant()
+  const reduced = usePrefersReducedMotion()
+
+  useEffect(() => {
+    if (reduced) return
+    const mobile = variant === 'mobile'
+    const ctx = gsap.context(() => {
+      /* entrada fluida: a folha bone sobe cobrindo o hero com um leve parallax do conteúdo */
+      gsap.fromTo(
+        '.x-mani-stage',
+        { y: mobile ? 44 : 64 },
+        {
+          y: 0,
+          ease: 'none',
+          scrollTrigger: { trigger: secRef.current, start: 'top bottom', end: 'top top', scrub: true },
+        },
+      )
+      const slams = gsap.utils.toArray<HTMLElement>('.x-mani-slam')
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: secRef.current,
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: mobile ? 0.3 : 0.5,
+        },
+      })
+      const inFrom = mobile
+        ? { opacity: 0, scale: 1.7, yPercent: 8 }
+        : { opacity: 0, scale: 2.7, skewX: -10, filter: 'blur(10px)' }
+      const inTo = mobile
+        ? { opacity: 1, scale: 1, yPercent: 0, duration: 1, ease: 'power3.out' }
+        : { opacity: 1, scale: 1, skewX: 0, filter: 'blur(0px)', duration: 1, ease: 'power3.out' }
+      slams.forEach((el) => {
+        tl.fromTo(el, inFrom, inTo)
+        tl.to(
+          el,
+          { opacity: 0, y: mobile ? -46 : -70, duration: mobile ? 0.5 : 0.55, ease: 'power2.in' },
+          mobile ? '+=0.3' : '+=0.35',
+        )
+      })
+      tl.fromTo(
+        '.x-mani-break',
+        { opacity: 0, scale: 0.6, rotate: -3 },
+        { opacity: 1, scale: 1, rotate: 0, duration: 1.2, ease: 'back.out(1.6)' },
+      )
+      tl.fromTo(
+        '.x-mani-copy',
+        { opacity: 0, y: 50 },
+        { opacity: 1, y: 0, duration: 1, ease: 'power2.out' },
+        '+=0.2',
+      )
+      tl.to({}, { duration: 0.8 }) // hold: a frase final assenta antes de liberar p/ "O que fazemos"
+    }, secRef)
+    return () => ctx.revert()
+  }, [variant, reduced])
+
+  return (
+    <section
+      ref={secRef}
+      id="c-manifesto"
+      className={`x-ch x-manifesto ${reduced ? '' : 'is-anim'}`}
+      style={{ height: '400vh' }}
+      aria-label="Manifesto"
+    >
+      <div className="x-ch-view">
+        <div className="x-mani-stage">
+          {SLAMS.map((s) => (
+            <p className="x-mani-slam" key={s}>
+              {s}
+            </p>
+          ))}
+          <p className="x-mani-break">
+            Mayven exists for <em>the opposite.</em>
+          </p>
+          <p className="x-mani-copy">
+            O digital ficou genérico. A Mayven cria <strong>presença, percepção e crescimento</strong> para
+            marcas que querem ser impossíveis de ignorar.
+          </p>
+        </div>
+        <p className="x-mono x-mani-tag" aria-hidden="true">
+          MANIFESTO — SINAL 001
+        </p>
+      </div>
+    </section>
+  )
+}
+
 /* progress within a chapter track → local state (for step lists) */
 function useChapterIndex(id: string, count: number) {
   const [idx, setIdx] = useState(0)
@@ -462,7 +562,7 @@ export default function Journey() {
   useEffect(() => {
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
     let lightNow = false
-    const zones: Array<readonly [number, number]> = [CH.presenca, CH.cases]
+    const zones: Array<readonly [number, number]> = [[CH.manifesto[0], CH.presenca[1]], CH.cases]
     const H = 0.014
     const applyTheme = (p: number) => {
       const inZone = zones.some(([a, b]) => (lightNow ? p > a - H && p < b + H : p > a + H && p < b - H))
@@ -603,7 +703,10 @@ export default function Journey() {
           </div>
         </Chapter>
 
-        {/* 02 — O QUE FAZEMOS · TERRITÓRIO 1 (o mundo vira bone aqui) */}
+        {/* 01.5 — MANIFESTO (interlúdio bone: frases no scroll, recuperado da versão anterior) */}
+        <ManifestoChapter />
+
+        {/* 02 — O QUE FAZEMOS · TERRITÓRIO 1 (a zona bone começa no manifesto e segue por aqui) */}
         <Chapter id="c-presenca" vh={220} className="x-presenca">
           <p className="x-eyebrow x-mono" data-reveal>01 — O QUE FAZEMOS</p>
           <h2 className="x-echo" data-text="PRESENÇA" data-reveal>

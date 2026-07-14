@@ -31,15 +31,17 @@ export function detectQuality(): XQuality {
 }
 
 /* chapter map — fractions of the master journey (world stations + DOM sync).
-   Narrativa: presença → experiências → 3 manifestações → método → cases → contato. */
+   Narrativa: manifesto → presença → experiências → 3 manifestações → método → cases → contato.
+   Alturas: 130 + 400 + 220 + 220 + 300 + 280 + 260 + 230 = 2060vh (scroll útil 1960vh). */
 export const CH = {
-  hero: [0.0, 0.08],
-  presenca: [0.08, 0.24], // ← o mundo vira bone aqui (composição, ordem, editorial)
-  experiencias: [0.24, 0.4], // volta ao escuro (resposta, reação, movimento)
-  tipos: [0.4, 0.58], // 3 manifestações de experiência
-  metodo: [0.58, 0.72], // Entender → Imaginar → Construir → Ativar
-  cases: [0.72, 0.87], // ← segunda zona bone (editorial)
-  contato: [0.87, 1.0],
+  hero: [0.0, 0.067],
+  manifesto: [0.055, 0.273], // ← primeira zona bone; início adiantado p/ o tema clarear junto com a folha que cobre o hero
+  presenca: [0.273, 0.387], // a zona bone segue direto do manifesto até aqui
+  experiencias: [0.387, 0.5], // volta ao escuro (resposta, reação, movimento)
+  tipos: [0.5, 0.655], // 3 manifestações de experiência
+  metodo: [0.655, 0.8], // Entender → Imaginar → Construir → Ativar
+  cases: [0.8, 0.933], // ← segunda zona bone (editorial)
+  contato: [0.933, 1.0],
 } as const
 
 export const DEPTH = 240 // world length in units — camera travels 0 → -DEPTH

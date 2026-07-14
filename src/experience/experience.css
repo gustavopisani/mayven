@@ -550,6 +550,65 @@ body[data-xtheme='light'] .x-vignette { opacity: 0; }
   opacity: 0;
 }
 
+/* ---------- manifesto: interlúdio bone (frases no scroll) ----------
+   Fundo opaco próprio: o capítulo é sempre bone/preto independente do lerp do
+   mundo atrás — cores fixas, não as variáveis de tema. */
+.x-manifesto { background: var(--xw); color: #0b0b0d; }
+.x-manifesto .x-ch-view {
+  max-width: none;
+  align-items: center;
+  /* clip: texto em escala 2.7 não pode gerar scroll horizontal (hidden = fallback p/ Safari < 16;
+     no próprio elemento sticky nenhum dos dois quebra o sticky) */
+  overflow: hidden;
+  overflow: clip;
+}
+.x-mani-stage { position: relative; width: 100%; max-width: 1240px; margin: 0 auto; text-align: center; }
+.x-mani-slam {
+  font-family: var(--xdisp); font-weight: 400; text-transform: uppercase;
+  font-size: clamp(44px, 7vw, 118px); line-height: 0.96; letter-spacing: 0.004em;
+  color: #0b0b0d;
+}
+.x-mani-break {
+  font-family: var(--xdisp); font-weight: 400; text-transform: uppercase;
+  font-size: clamp(30px, 4.6vw, 72px); line-height: 1.02;
+  color: #0b0b0d;
+}
+.x-mani-break em { font-style: normal; color: var(--xm); }
+.x-mani-copy {
+  margin: 0 auto; max-width: 56ch;
+  font-size: clamp(16px, 1.5vw, 21px); line-height: 1.5;
+  color: rgba(11, 11, 13, 0.8);
+}
+.x-mani-copy strong { color: var(--xm); }
+.x-mani-tag { position: absolute; left: 7vw; bottom: 26px; color: rgba(11, 11, 13, 0.45); }
+/* modo animado: frases empilhadas no centro do palco, reveladas pela timeline */
+.x-manifesto.is-anim .x-mani-stage {
+  height: 60vh;
+  display: flex; align-items: center; justify-content: center;
+}
+.x-manifesto.is-anim .x-mani-slam,
+.x-manifesto.is-anim .x-mani-break {
+  position: absolute; left: 0; right: 0; top: 50%; translate: 0 -50%;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.x-manifesto.is-anim .x-mani-copy {
+  position: absolute; left: 0; right: 0; bottom: -10vh;
+  opacity: 0;
+}
+/* modo estático (prefers-reduced-motion): fluxo editorial, tudo visível */
+.x-manifesto:not(.is-anim) .x-mani-slam { margin-bottom: 10px; opacity: 0.92; }
+.x-manifesto:not(.is-anim) .x-mani-break { margin-top: 26px; }
+.x-manifesto:not(.is-anim) .x-mani-copy { margin-top: 24px; }
+@media (max-width: 860px) {
+  .x-mani-slam { font-size: clamp(34px, 11vw, 60px); line-height: 1.02; }
+  .x-mani-break { font-size: clamp(24px, 8vw, 44px); }
+  .x-mani-copy { font-size: 15px; max-width: 34ch; }
+  .x-manifesto.is-anim .x-mani-stage { height: 62vh; }
+  .x-manifesto.is-anim .x-mani-copy { bottom: -4vh; }
+  .x-mani-tag { left: 22px; bottom: 18px; }
+}
+
 /* ---------- what we build: giant editorial index ---------- */
 .x-build-grid {
   display: grid; grid-template-columns: auto 1fr;
