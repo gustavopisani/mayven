@@ -30,17 +30,16 @@ export function detectQuality(): XQuality {
   return 'high'
 }
 
-/* chapter map — fractions of the master journey (world stations + DOM sync) */
+/* chapter map — fractions of the master journey (world stations + DOM sync).
+   Narrativa: presença → experiências → 3 manifestações → método → cases → contato. */
 export const CH = {
-  hero: [0.0, 0.07],
-  manifesto: [0.07, 0.18], // ← the world flips to bone here
-  invisible: [0.18, 0.32],
-  build: [0.32, 0.5],
-  immersive: [0.5, 0.62], // IoT · XR · Vision Pro · gamification · totens · eventos
-  method: [0.62, 0.74],
-  signals: [0.74, 0.84], // ← second bone flip
-  operation: [0.84, 0.91],
-  cta: [0.91, 1.0],
+  hero: [0.0, 0.08],
+  presenca: [0.08, 0.24], // ← o mundo vira bone aqui (composição, ordem, editorial)
+  experiencias: [0.24, 0.4], // volta ao escuro (resposta, reação, movimento)
+  tipos: [0.4, 0.58], // 3 manifestações de experiência
+  metodo: [0.58, 0.72], // Entender → Imaginar → Construir → Ativar
+  cases: [0.72, 0.87], // ← segunda zona bone (editorial)
+  contato: [0.87, 1.0],
 } as const
 
 export const DEPTH = 240 // world length in units — camera travels 0 → -DEPTH

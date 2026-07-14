@@ -28,7 +28,7 @@ function lightAt(p: number) {
       1 - THREE.MathUtils.smoothstep(p, b - f, b + f * 0.3),
     )
   }
-  return Math.max(zone(CH.manifesto[0], CH.manifesto[1]), zone(CH.signals[0], CH.signals[1]))
+  return Math.max(zone(CH.presenca[0], CH.presenca[1]), zone(CH.cases[0], CH.cases[1]))
 }
 
 /* ---------- HERO + CTA: the sheet stack — layered interface matter ---------- */
@@ -64,25 +64,31 @@ function SheetStack({ z, spreadRange, scale = 1 }: { z: number; spreadRange: [nu
   )
 }
 
-/* ---------- INVISIBLE WORK: the pixel wall — a live surface that ripples under the cursor ---------- */
+/* ---------- CONSTRUÍMOS PRESENÇA: fragmentos dispersos se organizam numa estrutura ----------
+   Assinatura do território: composição, repetição, consistência — a formação de um todo.
+   Peças escuras sobre o fundo bone; o scroll do capítulo monta a parede, o cursor a percorre. */
 function PixelWall({ cols, rows }: { cols: number; rows: number }) {
   const inst = useRef<THREE.InstancedMesh>(null!)
-  // early in the chapter and BIG — it fills the view within the first scrolls
-  const z = zAt(CH.invisible[0] + (CH.invisible[1] - CH.invisible[0]) * 0.42)
+  const z = zAt(CH.presenca[0] + (CH.presenca[1] - CH.presenca[0]) * 0.45)
   const W = 27
   const H = 15.5
   const dummy = useMemo(() => new THREE.Object3D(), [])
-  const colors = useMemo(() => {
-    const arr = new Float32Array(cols * rows * 3)
+  const { colors, scatter } = useMemo(() => {
+    const colors = new Float32Array(cols * rows * 3)
+    const scatter = new Float32Array(cols * rows * 3)
     const c = new THREE.Color()
     for (let i = 0; i < cols * rows; i++) {
       const r = Math.random()
       c.set(r > 0.955 ? MAGENTA : r > 0.92 ? BONE : r > 0.5 ? CHARCOAL2 : '#22242c')
-      arr[i * 3] = c.r
-      arr[i * 3 + 1] = c.g
-      arr[i * 3 + 2] = c.b
+      colors[i * 3] = c.r
+      colors[i * 3 + 1] = c.g
+      colors[i * 3 + 2] = c.b
+      // posição dispersa de origem — cada fragmento vem de um lugar próprio
+      scatter[i * 3] = (Math.random() - 0.5) * 46
+      scatter[i * 3 + 1] = (Math.random() - 0.5) * 30
+      scatter[i * 3 + 2] = (Math.random() - 0.5) * 26
     }
-    return arr
+    return { colors, scatter }
   }, [cols, rows])
 
   useEffect(() => {
@@ -92,6 +98,9 @@ function PixelWall({ cols, rows }: { cols: number; rows: number }) {
   useFrame((st) => {
     const t = st.clock.elapsedTime
     const cam = st.camera
+    // progresso local do capítulo: 0 = caos disperso · 1 = estrutura montada
+    const local = THREE.MathUtils.clamp((xstore.p - CH.presenca[0]) / (CH.presenca[1] - CH.presenca[0]), 0, 1)
+    const assemble = THREE.MathUtils.smoothstep(local, 0.05, 0.6)
     // project the pointer onto the wall plane (approximation by camera frustum at wall depth)
     const dist = Math.abs(cam.position.z - z)
     const halfH = Math.tan(((cam as THREE.PerspectiveCamera).fov * Math.PI) / 360) * dist
@@ -101,15 +110,20 @@ function PixelWall({ cols, rows }: { cols: number; rows: number }) {
     let k = 0
     for (let iy = 0; iy < rows; iy++) {
       for (let ix = 0; ix < cols; ix++) {
+        const i = k
         const x = (ix / (cols - 1) - 0.5) * W
         const y = (iy / (rows - 1) - 0.5) * H
         const dCur = Math.hypot(x - px, y - py)
-        const ripple = Math.exp(-dCur * 0.55) * (1.1 + Math.sin(dCur * 3.2 - t * 4.5) * 0.35)
+        const ripple = Math.exp(-dCur * 0.55) * (1.1 + Math.sin(dCur * 3.2 - t * 4.5) * 0.35) * assemble
         const wave = Math.sin(x * 0.5 + t * 1.1) * Math.cos(y * 0.6 + t * 0.9) * 0.1
-        dummy.position.set(x, y, z + wave + ripple * 0.9)
-        const s = 1 + ripple * 0.9
+        // do disperso ao grid — a presença se forma
+        const gx = THREE.MathUtils.lerp(scatter[i * 3], x, assemble)
+        const gy = THREE.MathUtils.lerp(scatter[i * 3 + 1], y, assemble)
+        const gz = THREE.MathUtils.lerp(scatter[i * 3 + 2], wave + ripple * 0.9, assemble)
+        dummy.position.set(gx, gy, z + gz)
+        const s = (0.35 + assemble * 0.65) * (1 + ripple * 0.9)
         dummy.scale.set(s, s, 1)
-        dummy.rotation.set(0, 0, 0)
+        dummy.rotation.set(0, 0, (1 - assemble) * scatter[i * 3 + 2] * 0.2)
         dummy.updateMatrix()
         inst.current.setMatrixAt(k++, dummy.matrix)
       }
@@ -124,9 +138,10 @@ function PixelWall({ cols, rows }: { cols: number; rows: number }) {
   )
 }
 
-/* ---------- WHAT WE BUILD: one monolith screen that FLIPS per system ----------
-   A single object transforming with the content — not furniture floating around. */
-const BAR_COLORS = [MAGENTA, '#2d6cff', LIME, MAGENTA, BONE, '#2d6cff']
+/* ---------- TIPOS DE EXPERIÊNCIA: um mesmo objeto, três estados ----------
+   Digital (magenta) · Marca & comércio (azul) · Live & conectado (lima).
+   O monólito dá meia-volta a cada manifestação — três modos do mesmo sistema. */
+const BAR_COLORS = [MAGENTA, '#2d6cff', LIME]
 function BuildMonolith() {
   const group = useRef<THREE.Group>(null!)
   const barF = useRef<THREE.Mesh>(null!)
@@ -134,11 +149,11 @@ function BuildMonolith() {
   const rot = useRef(0)
   useFrame((st) => {
     const t = st.clock.elapsedTime
-    const local = (xstore.p - CH.build[0]) / (CH.build[1] - CH.build[0])
+    const local = (xstore.p - CH.tipos[0]) / (CH.tipos[1] - CH.tipos[0])
     const g = group.current
     g.visible = local > -0.12 && local < 1.12
     if (!g.visible) return
-    const idx = THREE.MathUtils.clamp(Math.floor(local * 6), 0, 5)
+    const idx = THREE.MathUtils.clamp(Math.floor(local * 3), 0, 2)
     // it rides ahead of the camera through the whole chapter…
     g.position.z = st.camera.position.z - 9
     g.position.x = 2.6 + Math.sin(t * 0.4) * 0.08
@@ -169,11 +184,12 @@ function BuildMonolith() {
   )
 }
 
-/* ---------- IMMERSIVE & PHYSICAL: the gate you fly through + device slabs ---------- */
+/* ---------- CRIAMOS EXPERIÊNCIAS: o portal que se atravessa + telas/dispositivos reativos ----------
+   Assinatura do território: resposta, interação, conexão — tudo aqui reage ao cursor. */
 function ImmersiveGate() {
   const group = useRef<THREE.Group>(null!)
   const devices = useRef<THREE.Group>(null!)
-  const z = zAt((CH.immersive[0] + CH.immersive[1]) / 2)
+  const z = zAt((CH.experiencias[0] + CH.experiencias[1]) / 2)
   const DEVICES = useMemo(() => {
     const v3 = (x: number, y: number, z: number): [number, number, number] => [x, y, z]
     return [
@@ -233,49 +249,70 @@ function ImmersiveGate() {
   )
 }
 
-/* ---------- METHOD: a flat progress ring — the cycle, not a planet orbit ---------- */
-function MethodRing() {
+/* ---------- MÉTODO: a mesma geometria atravessa 4 estágios até ganhar presença ----------
+   Entender = pontos observados · Imaginar = linhas conectam · Construir = matéria · Ativar = energia.
+   O usuário VÊ a ideia se materializar — não são quatro cards. */
+function MethodMaterialize() {
   const group = useRef<THREE.Group>(null!)
-  const arc = useRef<THREE.Mesh>(null!)
-  const z = zAt((CH.method[0] + CH.method[1]) / 2)
-  useFrame(() => {
-    const local = THREE.MathUtils.clamp((xstore.p - CH.method[0]) / (CH.method[1] - CH.method[0]), 0, 1)
-    group.current.rotation.z = -local * Math.PI * 2 // one full revolution across the chapter
-    arc.current.rotation.z = local * Math.PI * 0.5
-    group.current.rotation.y = xstore.mx * 0.1
-    group.current.rotation.x = -xstore.my * 0.08
+  const pts = useRef<THREE.Points>(null!)
+  const wire = useRef<THREE.Mesh>(null!)
+  const solid = useRef<THREE.Mesh>(null!)
+  const pulse = useRef<THREE.Mesh>(null!)
+  const z = zAt((CH.metodo[0] + CH.metodo[1]) / 2)
+  const geo = useMemo(() => new THREE.IcosahedronGeometry(3.1, 1), [])
+  useEffect(() => () => geo.dispose(), [geo])
+
+  useFrame((st) => {
+    const t = st.clock.elapsedTime
+    const local = THREE.MathUtils.clamp((xstore.p - CH.metodo[0]) / (CH.metodo[1] - CH.metodo[0]), 0, 1)
+    const stage = local * 4 // 0..4 contínuo entre os estágios
+    const g = group.current
+    g.rotation.y = t * 0.12 + xstore.mx * 0.25
+    g.rotation.x = Math.sin(t * 0.3) * 0.06 - xstore.my * 0.15
+    // cada camada aparece no seu estágio e permanece por baixo das seguintes
+    const fade = (a: number, b: number) => THREE.MathUtils.clamp((stage - a) / (b - a), 0, 1)
+    ;(pts.current.material as THREE.PointsMaterial).opacity = 0.9 * fade(0, 0.5) * (1 - fade(2.6, 3.4) * 0.55)
+    ;(wire.current.material as THREE.MeshBasicMaterial).opacity = 0.55 * fade(0.9, 1.5)
+    const solidMat = solid.current.material as THREE.MeshStandardMaterial
+    solidMat.opacity = 0.95 * fade(1.9, 2.6)
+    // Ativar: o sistema recebe energia — pulso emissivo e anel expandindo
+    const energy = fade(2.9, 3.5)
+    solidMat.emissive.set(MAGENTA)
+    solidMat.emissiveIntensity = energy * (0.35 + 0.25 * Math.sin(t * 3))
+    const ring = pulse.current
+    const cycle = (t * 0.5) % 1
+    ring.visible = energy > 0.05
+    ring.scale.setScalar(1 + cycle * 2.2)
+    ;(ring.material as THREE.MeshBasicMaterial).opacity = energy * (1 - cycle) * 0.5
   })
+
   return (
     <group ref={group} position={[0, 0, z]}>
-      <mesh>
-        <ringGeometry args={[7.7, 7.94, 96]} />
-        <meshBasicMaterial color="#2c2e36" side={THREE.DoubleSide} />
+      <points ref={pts} geometry={geo}>
+        <pointsMaterial color={BONE} size={0.14} transparent opacity={0} depthWrite={false} />
+      </points>
+      <mesh ref={wire} geometry={geo}>
+        <meshBasicMaterial color="#565b66" wireframe transparent opacity={0} />
       </mesh>
-      <mesh ref={arc}>
-        <ringGeometry args={[7.62, 8.02, 96, 1, 0, Math.PI * 0.42]} />
-        <meshBasicMaterial color={MAGENTA} side={THREE.DoubleSide} />
+      <mesh ref={solid} geometry={geo} scale={0.985}>
+        <meshStandardMaterial color={CHARCOAL} roughness={0.55} metalness={0.2} transparent opacity={0} />
       </mesh>
-      {Array.from({ length: 6 }).map((_, i) => {
-        const a = (i / 6) * Math.PI * 2
-        return (
-          <mesh key={i} position={[Math.cos(a) * 7.82, Math.sin(a) * 7.82, 0.02]}>
-            <circleGeometry args={[0.3, 24]} />
-            <meshBasicMaterial color={i === 5 ? LIME : BONE} side={THREE.DoubleSide} />
-          </mesh>
-        )
-      })}
+      <mesh ref={pulse} rotation={[Math.PI / 2, 0, 0]} visible={false}>
+        <torusGeometry args={[3.4, 0.03, 8, 64]} />
+        <meshBasicMaterial color={MAGENTA} transparent opacity={0} />
+      </mesh>
     </group>
   )
 }
 
-/* ---------- SIGNALS: editorial panels — dark cards over the bone zone ---------- */
+/* ---------- CASES: painéis editoriais — cards escuros sobre a zona bone ---------- */
 function Gallery() {
   const group = useRef<THREE.Group>(null!)
-  const z0 = zAt(CH.signals[0]) - 4
+  const z0 = zAt(CH.cases[0]) - 4
   const frames = useMemo(
     () =>
-      Array.from({ length: 4 }, (_, i) => ({
-        z: z0 - i * 5.6,
+      Array.from({ length: 3 }, (_, i) => ({
+        z: z0 - i * 6.4,
         x: i % 2 === 0 ? -3.4 : 3.4,
         y: (i % 3) * 0.7 - 0.7,
       })),
@@ -302,34 +339,6 @@ function Gallery() {
         </group>
       ))}
     </group>
-  )
-}
-
-/* ---------- OPERATION: the flowing loop, matter-of-fact ---------- */
-function InfinityLoop() {
-  const inst = useRef<THREE.InstancedMesh>(null!)
-  const z = zAt((CH.operation[0] + CH.operation[1]) / 2) - 2
-  const N = 120
-  const dummy = useMemo(() => new THREE.Object3D(), [])
-  useFrame((st) => {
-    const t = st.clock.elapsedTime
-    for (let i = 0; i < N; i++) {
-      const u = ((i / N + t * 0.045) % 1) * Math.PI * 2
-      const d = 1 + Math.sin(u) * Math.sin(u)
-      dummy.position.set((Math.cos(u) / d) * 8.4, ((Math.sin(u) * Math.cos(u)) / d) * 8.4, z)
-      dummy.rotation.z = u
-      const s = 0.7 + Math.sin(u * 2 + t) * 0.3
-      dummy.scale.set(s, s, s)
-      dummy.updateMatrix()
-      inst.current.setMatrixAt(i, dummy.matrix)
-    }
-    inst.current.instanceMatrix.needsUpdate = true
-  })
-  return (
-    <instancedMesh ref={inst} args={[undefined, undefined, N]}>
-      <boxGeometry args={[0.22, 0.22, 0.05]} />
-      <meshBasicMaterial color={MAGENTA} />
-    </instancedMesh>
   )
 }
 
@@ -396,12 +405,11 @@ export default function World({ active }: { active: boolean }) {
       <directionalLight position={[4, 7, 6]} intensity={1.6} />
       <directionalLight position={[-5, -3, 2]} intensity={0.5} color="#ffd9e6" />
       <PixelWall cols={med ? 34 : 50} rows={med ? 20 : 29} />
-      <BuildMonolith />
       <ImmersiveGate />
-      <MethodRing />
+      <BuildMonolith />
+      <MethodMaterialize />
       <Gallery />
-      <InfinityLoop />
-      <SheetStack z={zAt(0.965)} spreadRange={[CH.cta[0], 1]} scale={1.15} />
+      <SheetStack z={zAt(0.955)} spreadRange={[CH.contato[0], 1]} scale={1.15} />
     </Canvas>
   )
 }

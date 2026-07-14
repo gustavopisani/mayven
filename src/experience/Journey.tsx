@@ -4,6 +4,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
 import { CH, detectQuality, xstore } from './store'
 import HeroPhysicsExperience from './HeroPhysicsExperience'
+import ContactForm from './ContactForm'
+import { CASES } from './data/cases'
 import './experience.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -118,47 +120,47 @@ function HeroFilm() {
 }
 
 /* =====================================================================
-   THE JOURNEY — the DOM layer of the experience. Semantic content in
-   normal flow; the fixed WebGL world travels behind it. One continuous
-   take: content reveals are synced to the same master progress.
+   THE JOURNEY — camada DOM da experiência. Conteúdo semântico em fluxo
+   normal; o mundo WebGL fixo viaja atrás. Narrativa: a Mayven cria
+   presença → presença diferencia → a marca também pode ser vivida →
+   3 manifestações → método → cases → convite.
    ===================================================================== */
 
-/* ---------------- content (fonte de verdade: plataforma de marca aprovada) ---------------- */
+/* ---------------- conteúdo (briefing aprovado — não trocar por clichês) ---------------- */
 
-const SYSTEMS = [
-  { t: 'Digital Experiences', d: 'Sites, plataformas, interfaces, aplicações, e-commerce, WebGL e produtos digitais desenhados para serem explorados, não apenas navegados.' },
-  { t: 'Spatial Experiences', d: 'AR, VR, Apple Vision Pro, ambientes virtuais e computação espacial para quando uma tela não basta.' },
-  { t: 'Connected Experiences', d: 'IoT, sensores, hardware, software, dispositivos e ambientes responsivos que percebem, respondem e participam.' },
-  { t: 'Live Experiences', d: 'Eventos, instalações, ativações, totens, projeções e gamificação transformando presença física em participação ativa.' },
-  { t: 'Media Experiences', d: 'Conteúdo, motion, campanhas, mídia, narrativas e distribuição pensados para atravessar telas, formatos, canais e cultura.' },
-  { t: 'Experience Systems', d: 'Estratégia, engenharia, dados, operação e mensuração conectando os territórios em uma capacidade contínua.' },
+const TYPES = [
+  {
+    t: 'Experiências digitais',
+    d: 'Sites, aplicativos, plataformas, e-commerce, marketplaces, interfaces interativas, WebGL, 3D e produtos digitais.',
+    sig: ['PIXELS', 'GRIDS', 'SUPERFÍCIES', 'LUZ'],
+  },
+  {
+    t: 'Experiências de marca e comércio',
+    d: 'Jornadas de compra, personalização, CRM, WhatsApp, atendimento, relacionamento, campanhas e experiências omnicanal.',
+    sig: ['FLUXOS', 'JORNADAS', 'CONEXÕES', 'SINAIS'],
+  },
+  {
+    t: 'Experiências live e conectadas',
+    d: 'Eventos, ativações, lançamentos, totens, instalações, gamificação, realidade aumentada, realidade virtual, sensores, IoT e ambientes interativos.',
+    sig: ['ESPAÇOS', 'SENSORES', 'ONDAS', 'PRESENÇA FÍSICA'],
+  },
 ]
 
 const METHOD = [
-  { t: 'Imagine', d: 'Definir ambição, contexto e a resposta humana que a experiência precisa provocar.' },
-  { t: 'Design', d: 'Traduzir a ideia em narrativa, interação, espaço, ritmo e comportamento.' },
-  { t: 'Engineer', d: 'Construir os sistemas, tecnologias e integrações que tornam a experiência real.' },
-  { t: 'Activate', d: 'Levar a experiência para telas, espaços, canais, objetos e pessoas.' },
-  { t: 'Learn', d: 'Observar comportamento, performance e impacto para evoluir continuamente.' },
+  { t: 'Entender', d: 'O negócio, a marca, o público e o momento.', stage: 'OBSERVAÇÃO — PONTOS' },
+  { t: 'Imaginar', d: 'A ideia, o posicionamento e a experiência.', stage: 'FORMA — LINHAS' },
+  { t: 'Construir', d: 'O design, a tecnologia, o conteúdo e o sistema.', stage: 'ESTRUTURA — MATÉRIA' },
+  { t: 'Ativar', d: 'Os canais, os espaços, a mídia e as pessoas.', stage: 'SISTEMA — ENERGIA' },
 ]
-
-const SIGNALS = [
-  { t: 'Launch Film Cinemático', k: 'CONTENT & MOTION' },
-  { t: 'Interactive Web World', k: 'WEBGL & MOTION' },
-  { t: 'Protótipo de Espaço Conectado', k: 'SENSORS & SPACE' },
-  { t: 'Media Experience Engine', k: 'CONTENT & DISTRIBUTION' },
-]
-/* Cases reais entram aqui quando existirem — estrutura pronta, sem inventar
-   clientes, métricas ou resultados. */
 
 const MENU = [
-  { id: 'c-signals', n: '01', t: 'Projetos' },
-  { id: 'c-build', n: '02', t: 'Experiências' },
-  { id: 'c-invisible', n: '03', t: 'Studio' },
-  { id: 'c-method', n: '04', t: 'Insights' },
-  { id: 'c-cta', n: '05', t: 'Contato' },
+  { id: 'c-hero', n: '01', t: 'Mayven' },
+  { id: 'c-presenca', n: '02', t: 'O que fazemos' },
+  { id: 'c-tipos', n: '03', t: 'Experiências' },
+  { id: 'c-metodo', n: '04', t: 'Método' },
+  { id: 'c-cases', n: '05', t: 'Cases' },
+  { id: 'c-contato', n: '06', t: 'Contato' },
 ]
-
 
 /* ---------------- loader ---------------- */
 function XLoader({ onDone }: { onDone: () => void }) {
@@ -191,7 +193,7 @@ function XLoader({ onDone }: { onDone: () => void }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-  const status = pct < 33 ? 'INICIANDO SIGNAL' : pct < 72 ? 'CALIBRANDO SISTEMA' : pct < 99 ? 'CARREGANDO MAYVEN' : 'SISTEMA PRONTO'
+  const status = pct < 33 ? 'INICIANDO' : pct < 72 ? 'CALIBRANDO PRESENÇA' : pct < 99 ? 'CARREGANDO MAYVEN' : 'PRONTO'
   return (
     <div className={`x-loader ${leaving ? 'is-leaving' : ''}`} role="status" aria-label="Carregando MAYVEN">
       <div className="x-loader-word" aria-hidden="true">
@@ -301,7 +303,7 @@ function XNav() {
         </a>
         <p className="x-nav-tag x-mono">CREATIVE TECH MEDIA COMPANY</p>
         <div className="x-nav-right">
-          <a className="x-nav-cta x-mono" href="#c-cta" onClick={go('c-cta')}>
+          <a className="x-nav-cta x-mono" href="#c-contato" onClick={go('c-contato')}>
             COMEÇAR PROJETO
           </a>
           <button ref={btn} className="x-menu-btn x-mono" aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen(!open)}>
@@ -380,6 +382,56 @@ function useReveals(scope: React.RefObject<HTMLElement>) {
   }, [scope])
 }
 
+/* ---------------- case editorial (expansível, acessível, orientado a dados) ---------------- */
+function CaseArticle({ c, i }: { c: (typeof CASES)[number]; i: number }) {
+  const [open, setOpen] = useState(i === 0)
+  const hasBody = !!(c.contexto || c.desafio || c.ideia || c.experiencia || c.sistema?.length || c.impacto)
+  const sections: Array<[string, string | undefined]> = [
+    ['CONTEXTO', c.contexto],
+    ['DESAFIO', c.desafio],
+    ['IDEIA', c.ideia],
+    ['EXPERIÊNCIA', c.experiencia],
+    ['IMPACTO', c.impacto],
+  ]
+  return (
+    <article className={`x-case ${open ? 'is-open' : ''}`}>
+      <button
+        type="button"
+        className="x-case-head"
+        aria-expanded={open}
+        onClick={() => hasBody && setOpen(!open)}
+        data-x=""
+      >
+        <span className="x-mono x-case-num">C_{String(i + 1).padStart(2, '0')}</span>
+        <span className="x-case-title">
+          <h3>{c.title}</h3>
+          <span className="x-mono x-case-area">{c.area}</span>
+        </span>
+        <span className={`x-mono x-case-status ${c.status === 'EM BREVE' ? 'is-soon' : ''}`}>{c.status}</span>
+        {hasBody && <span className="x-case-toggle" aria-hidden="true">{open ? '−' : '+'}</span>}
+      </button>
+      {hasBody && open && (
+        <div className="x-case-body">
+          {sections.map(([k, v]) => v && (
+            <div className="x-case-block" key={k}>
+              <span className="x-mono">{k}</span>
+              <p>{v}</p>
+            </div>
+          ))}
+          {!!c.sistema?.length && (
+            <div className="x-case-block">
+              <span className="x-mono">SISTEMA</span>
+              <ul className="x-tags x-mono">
+                {c.sistema.map((s) => <li key={s}>{s}</li>)}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </article>
+  )
+}
+
 /* ---------------- the journey ---------------- */
 export default function Journey() {
   const [booted, setBooted] = useState(false)
@@ -410,7 +462,7 @@ export default function Journey() {
   useEffect(() => {
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
     let lightNow = false
-    const zones: Array<readonly [number, number]> = [CH.manifesto, CH.signals]
+    const zones: Array<readonly [number, number]> = [CH.presenca, CH.cases]
     const H = 0.014
     const applyTheme = (p: number) => {
       const inZone = zones.some(([a, b]) => (lightNow ? p > a - H && p < b + H : p > a + H && p < b - H))
@@ -489,33 +541,27 @@ export default function Journey() {
     window.addEventListener('mousemove', onMove, { passive: true })
 
     /* first-scroll cinematic transition */
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      const ctx = gsap.context(() => {
-        gsap.timeline({
-          scrollTrigger: {
-            trigger: '#c-hero',
-            start: 'top top',
-            end: 'bottom top',
-            scrub: true,
-          },
-        })
-          .to('.x-hero-film video, .x-hero-poster', { scale: 1.08, yPercent: -3, ease: 'none' }, 0)
-          .to('.x-hero-copy', { y: -42, opacity: 0.18, ease: 'none' }, 0.08)
-      }, rootRef)
-      return () => {
-        window.removeEventListener('x:ready', run)
-        window.removeEventListener('mousemove', onMove)
-        ctx.revert()
-      }
-    }
+    const ctx = gsap.context(() => {
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: '#c-hero',
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true,
+        },
+      })
+        .to('.x-hero-film video, .x-hero-poster', { scale: 1.08, yPercent: -3, ease: 'none' }, 0)
+        .to('.x-hero-copy', { y: -42, opacity: 0.18, ease: 'none' }, 0.08)
+    }, rootRef)
     return () => {
       window.removeEventListener('x:ready', run)
       window.removeEventListener('mousemove', onMove)
+      ctx.revert()
     }
   }, [])
 
-  const buildIdx = useChapterIndex('c-build', SYSTEMS.length)
-  const methodIdx = useChapterIndex('c-method', METHOD.length)
+  const typeIdx = useChapterIndex('c-tipos', TYPES.length)
+  const methodIdx = useChapterIndex('c-metodo', METHOD.length)
 
   const gl = quality.current !== 'off'
 
@@ -536,113 +582,105 @@ export default function Journey() {
           <HeroFilm />
           <div className="x-hero-copy">
             <p className="x-kicker x-mono x-fade">Creative Tech Media Company</p>
-            <h1 className="x-hero-title" aria-label="A experiência é a interface.">
-              <span>A experiência</span>
-              <span>é a interface.</span>
+            <h1 className="x-hero-title" aria-label="Presença para marcas que não nasceram para parecer comuns.">
+              <span>Presença para marcas</span>
+              <span>que não nasceram</span>
+              <span>para parecer comuns.</span>
             </h1>
             <p className="x-hero-sub x-fade">
-              Criamos experiências que atravessam telas, espaços, objetos e pessoas.
+              Estratégia, criatividade, tecnologia e mídia para construir marcas mais presentes
+              e experiências que vão além do esperado.
             </p>
             <div className="x-hero-ctas x-fade">
-              <a className="x-btn x-btn-solid" href="#c-cta" data-x="">Criar uma experiência</a>
-              <a className="x-btn" href="#c-signals" data-x="">Ver projetos</a>
+              <a className="x-btn x-btn-solid" href="#c-presenca" data-x="">Conheça a Mayven</a>
+              <a className="x-btn" href="#c-contato" data-x="">Comece um projeto</a>
             </div>
           </div>
-          <HeroPhysicsExperience headline="A EXPERIÊNCIA É A INTERFACE." />
+          <HeroPhysicsExperience headline="PRESENÇA PARA MARCAS QUE NÃO NASCERAM PARA PARECER COMUNS." />
           <div className="x-scrollcue x-fade" aria-hidden="true">
             <span className="x-mono">ROLAR</span>
             <i />
           </div>
         </Chapter>
 
-        {/* 02 — POSICIONAMENTO */}
-        <Chapter id="c-manifesto" vh={240} className="x-manifesto">
-          <p className="x-eyebrow x-mono" data-reveal>01 — POSICIONAMENTO</p>
-          <h2 className="x-echo" data-text="EXPERIÊNCIA" data-reveal>
-            Tecnologia não é <em>a experiência.</em>
+        {/* 02 — O QUE FAZEMOS · TERRITÓRIO 1 (o mundo vira bone aqui) */}
+        <Chapter id="c-presenca" vh={220} className="x-presenca">
+          <p className="x-eyebrow x-mono" data-reveal>01 — O QUE FAZEMOS</p>
+          <h2 className="x-echo" data-text="PRESENÇA" data-reveal>
+            Construímos <em>presença.</em>
           </h2>
+          <p className="x-lead" data-reveal>
+            Ajudamos marcas a ocupar um espaço próprio no mercado.
+          </p>
           <p className="x-copy" data-reveal>
-            É o que torna a experiência possível. As pessoas não lembram do framework,
-            do sensor, da engine de render ou da integração.
-          </p>
-          <p className="x-copy x-copy-punch" data-reveal>
-            Elas lembram do que aconteceu quando tocaram, entraram, moveram, descobriram ou compartilharam algo.
-            <strong> Nós desenhamos esse momento.</strong>
-          </p>
-        </Chapter>
-
-        {/* 03 — INVISIBLE WORK */}
-        <Chapter id="c-invisible" vh={230} className="x-invisible">
-          <p className="x-eyebrow x-mono" data-reveal>02 — INVISIBLE WORK</p>
-          <h2 className="x-echo" data-text="WORK" data-reveal>
-            A melhor tecnologia quase sempre <em>desaparece.</em>
-          </h2>
-          <p className="x-copy" data-reveal>
-            As pessoas percebem quando a interação parece natural, a resposta é imediata,
-            a história parece viva e o ambiente entende o que está acontecendo.
-          </p>
-          <p className="x-copy x-copy-punch" data-reveal>
-            Strategy, story, experience design, interface, motion, spatial thinking, engineering,
-            intelligence, media e measurement trabalham como um sistema só.
+            Posicionamento, identidade, conteúdo, mídia, canais e experiências digitais trabalham
+            juntos para fazer a marca parecer tão relevante quanto aquilo que entrega.
           </p>
           <ul className="x-tags x-mono" data-reveal>
-            {['STRATEGY', 'STORY', 'EXPERIENCE DESIGN', 'INTERFACE', 'MOTION', 'ENGINEERING', 'MEDIA', 'MEASUREMENT'].map((t) => (
+            {['BRANDING', 'SITES', 'CONTEÚDO', 'CAMPANHAS', 'MÍDIA', 'CANAIS'].map((t) => (
               <li key={t}>{t}</li>
             ))}
           </ul>
         </Chapter>
 
-        {/* 04 — TERRITÓRIOS */}
-        <Chapter id="c-build" vh={360} className="x-build">
-          <p className="x-eyebrow x-mono">03 — TERRITÓRIOS DE EXPERIÊNCIA</p>
+        {/* 03 — O QUE FAZEMOS · TERRITÓRIO 2 (de volta ao escuro: reação) */}
+        <Chapter id="c-experiencias" vh={220} className="x-experiencias">
+          <p className="x-eyebrow x-mono" data-reveal>01 — O QUE FAZEMOS</p>
+          <h2 className="x-echo" data-text="VIVIDA" data-reveal>
+            Criamos <em>experiências.</em>
+          </h2>
+          <p className="x-lead" data-reveal>
+            Projetamos novas formas de interação entre marcas e pessoas.
+          </p>
+          <p className="x-copy" data-reveal>
+            Experiências digitais, comerciais, físicas e conectadas que podem acontecer em uma tela,
+            em uma jornada de compra, em um evento, em um espaço ou em um dispositivo.
+          </p>
+          <ul className="x-tags x-mono" data-reveal>
+            {['DIGITAL', 'COMMERCE', 'APPS', 'AR / VR', 'IOT', 'EVENTOS', 'LANÇAMENTOS'].map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+          <p className="x-copy x-copy-punch x-close-punch" data-reveal>
+            Uma marca precisa ser percebida. <strong>Uma experiência precisa ser vivida.</strong>
+          </p>
+        </Chapter>
+
+        {/* 04 — TIPOS DE EXPERIÊNCIA (três estados de um mesmo sistema) */}
+        <Chapter id="c-tipos" vh={300} className="x-tipos">
+          <p className="x-eyebrow x-mono">02 — TIPOS DE EXPERIÊNCIA</p>
           <div className="x-build-grid">
-            <span className="x-build-idx" aria-hidden="true" key={`n${buildIdx}`}>
-              0{buildIdx + 1}
+            <span className="x-build-idx" aria-hidden="true" key={`n${typeIdx}`}>
+              0{typeIdx + 1}
             </span>
             <div className="x-build-body">
-              <div className="x-station" key={buildIdx}>
-                <h2>{SYSTEMS[buildIdx].t}</h2>
-                <p>{SYSTEMS[buildIdx].d}</p>
+              <div className="x-station" key={typeIdx}>
+                <h2>{TYPES[typeIdx].t}</h2>
+                <p>{TYPES[typeIdx].d}</p>
+                <ul className="x-tags x-mono x-type-sig">
+                  {TYPES[typeIdx].sig.map((s) => <li key={s}>{s}</li>)}
+                </ul>
               </div>
               <ol className="x-build-list">
-                {SYSTEMS.map((s, i) => (
-                  <li key={s.t} className={i === buildIdx ? 'is-on' : ''}>
+                {TYPES.map((s, i) => (
+                  <li key={s.t} className={i === typeIdx ? 'is-on' : ''}>
                     <span className="x-mono">0{i + 1}</span> {s.t}
                   </li>
                 ))}
               </ol>
             </div>
           </div>
-          <p className="x-note x-mono">TELAS · ESPAÇOS · OBJETOS · PESSOAS · MAKE IT FELT.</p>
+          <p className="x-note x-mono">TRÊS MANIFESTAÇÕES. UM MESMO SISTEMA.</p>
         </Chapter>
 
-        {/* 05 — IMMERSIVE & PHYSICAL */}
-        <Chapter id="c-immersive" vh={240} className="x-immersive">
-          <p className="x-eyebrow x-mono" data-reveal>04 — ONDE A EXPERIÊNCIA EXISTE</p>
-          <h2 className="x-echo" data-text="ACROSS" data-reveal>
-            A interface pode ser <em>qualquer ponto de encontro.</em>
-          </h2>
-          <p className="x-copy" data-reveal>
-            Uma tela, um espaço, um objeto, um gesto, uma superfície, uma instalação, um device,
-            uma campanha ou um ambiente. O meio nasce da reação que queremos criar.
-          </p>
-          <p className="x-copy x-copy-punch" data-reveal>
-            A Mayven combina criatividade, tecnologia, mídia e engenharia para projetar como ideias
-            são vividas através de telas, espaços, objetos e pessoas.
-          </p>
-          <ul className="x-tags x-mono" data-reveal>
-            {['SITES', 'WEBGL', 'AR / VR', 'VISION PRO', 'IOT', 'TOTENS', 'INSTALAÇÕES', 'EVENTOS', 'MEDIA'].map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-        </Chapter>
-
-        {/* 06 — METHOD */}
-        <Chapter id="c-method" vh={300} className="x-method">
-          <p className="x-eyebrow x-mono">05 — PROCESS · DA RESPOSTA AO SISTEMA</p>
+        {/* 05 — MÉTODO (a ideia atravessa estágios até ganhar presença) */}
+        <Chapter id="c-metodo" vh={280} className="x-metodo">
+          <p className="x-eyebrow x-mono">03 — MÉTODO</p>
           <div className="x-method-grid">
             <div className="x-station" key={methodIdx}>
-              <span className="x-station-num x-mono">{String(methodIdx + 1).padStart(2, '0')} / {String(METHOD.length).padStart(2, '0')}</span>
+              <span className="x-station-num x-mono">
+                {String(methodIdx + 1).padStart(2, '0')} / 04 · {METHOD[methodIdx].stage}
+              </span>
               <h2>{METHOD[methodIdx].t}</h2>
               <p>{METHOD[methodIdx].d}</p>
             </div>
@@ -655,64 +693,42 @@ export default function Journey() {
             </ol>
           </div>
           <p className="x-note x-mono">
-            COMEÇAMOS PELA RESPOSTA HUMANA. DEPOIS DEFINIMOS A TECNOLOGIA NECESSÁRIA.
+            UMA IDEIA É OBSERVADA, TOMA FORMA, VIRA ESTRUTURA E GANHA PRESENÇA NO MUNDO.
           </p>
         </Chapter>
 
-        {/* 06 — PROJETOS */}
-        <Chapter id="c-signals" vh={220} className="x-signals">
-          <p className="x-eyebrow x-mono" data-reveal>06 — FRAMEWORK DE PROJETOS</p>
-          <h2 className="x-echo" data-text="WORK" data-reveal>
-            Um projeto começa pelo que <em>as pessoas vivem.</em>
+        {/* 06 — CASES (editorial, poucos projetos, profundidade — zona bone) */}
+        <Chapter id="c-cases" vh={260} className="x-cases">
+          <p className="x-eyebrow x-mono" data-reveal>04 — CASES</p>
+          <h2 className="x-echo" data-text="CASES" data-reveal>
+            Poucos projetos, <em>contados a fundo.</em>
           </h2>
           <p className="x-copy" data-reveal>
-            Cada case é contado por contexto, experiência, interação, tecnologia e impacto.
-            A stack importa, mas só depois que o momento humano está claro.
+            Contexto, desafio, ideia, experiência, sistema e impacto — cada case mostra como uma
+            ambição ganhou presença. Sem números inflados, sem cases emprestados.
           </p>
-          <div className="x-signal-row" data-reveal>
-            {SIGNALS.map((s, i) => (
-              <article key={s.t} data-x="">
-                <span className="x-mono">S_{String(i + 1).padStart(2, '0')} · {s.k}</span>
-                <h3>{s.t}</h3>
-                <b className="x-mono">CONTEXTO · EXPERIÊNCIA · INTERAÇÃO · TECNOLOGIA · IMPACTO</b>
-              </article>
+          <div className="x-case-list" data-reveal>
+            {CASES.map((c, i) => (
+              <CaseArticle c={c} i={i} key={c.slug} />
             ))}
           </div>
         </Chapter>
 
-        {/* 07 — MANIFESTO */}
-        <Chapter id="c-operation" vh={200} className="x-operation">
-          <p className="x-eyebrow x-mono" data-reveal>07 — MANIFESTO</p>
-          <h2 className="x-echo" data-text="FELT" data-reveal>
-            A tecnologia não deve ficar <em>entre a pessoa e o momento.</em>
+        {/* 07 — CONTATO */}
+        <Chapter id="c-contato" vh={230} className="x-contato">
+          <p className="x-eyebrow x-mono" data-reveal>05 — COMEÇAR</p>
+          <h2 data-reveal>
+            O que sua marca precisa <em>construir agora?</em>
           </h2>
           <p className="x-copy" data-reveal>
-            Ela deve fazer a interação parecer natural, a resposta parecer imediata,
-            a história parecer viva, o ambiente parecer atento e a ideia parecer real.
+            Uma presença mais forte. Uma nova experiência digital. Uma jornada de compra diferente.
+            Um lançamento, uma ativação, um espaço conectado — ou algo que ainda não tem um formato definido.
           </p>
           <p className="x-copy x-copy-punch" data-reveal>
-            Porque tecnologia não é o que as pessoas lembram. <strong>A experiência é.</strong>
+            Conte a ambição. <strong>A gente ajuda a dar forma a ela.</strong>
           </p>
-          <ul className="x-tags x-mono" data-reveal>
-            {['MAKE IT FELT', 'NATURAL RESPONSE', 'LIVE STORY', 'AWARE SPACE', 'REAL IDEA'].map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-        </Chapter>
-
-        {/* 08 — FINAL CTA */}
-        <Chapter id="c-cta" vh={170} className="x-cta">
-          <p className="x-eyebrow x-mono" data-reveal>08 — COMEÇAR PELA SENSAÇÃO</p>
-          <h2 data-reveal>
-            O que as pessoas <em>precisam sentir?</em>
-          </h2>
-          <p className="x-copy" data-reveal>
-            Conte a reação, o comportamento ou a transformação que você quer criar.
-            A gente desenha a experiência e define a tecnologia necessária para torná-la real.
-          </p>
-          <div className="x-hero-ctas" data-reveal>
-            <a className="x-btn x-btn-solid" href="mailto:hello@mayven.com.br" data-x="">Criar uma experiência</a>
-            <a className="x-btn" href="mailto:hello@mayven.com.br" data-x="">Começar pela sensação</a>
+          <div data-reveal>
+            <ContactForm />
           </div>
           <footer className="x-foot" data-reveal>
             <div>
@@ -731,7 +747,7 @@ export default function Journey() {
             <div>
               <p className="x-mono">MAYVEN</p>
               <p>Creative Tech Media Company</p>
-              <p className="x-legal">© 2026 MAYVEN — A experiência é a interface.</p>
+              <p className="x-legal">© 2026 MAYVEN — Presença para marcas que não nasceram para parecer comuns.</p>
             </div>
           </footer>
         </Chapter>
