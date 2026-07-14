@@ -300,10 +300,13 @@ export default function HeroPhysicsExperience({
   const [status, setStatus] = useState<ExperienceState>(() => (getReducedMotion() ? 'reduced-motion' : 'idle'))
   const [sensorMode, setSensorMode] = useState<SensorMode>('fallback')
   const [runId, setRunId] = useState(0)
+  const [busy, setBusy] = useState<'starting' | 'resetting' | null>(null)
   const active = isActiveState(status)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const layerRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const busyLockRef = useRef(false)
   const rafRef = useRef<number | null>(null)
   const cleanupRef = useRef<(() => void) | null>(null)
   const baselineRef = useRef<TiltSample | null>(null)
@@ -385,16 +388,21 @@ export default function HeroPhysicsExperience({
   }, [disposeSimulation])
 
   const beginExperience = useCallback(async () => {
+    if (busyLockRef.current || isActiveState(status)) return
     if (getReducedMotion()) {
       setStatus('reduced-motion')
       return
     }
 
+    busyLockRef.current = true
+    setBusy('starting')
     setStatus('requesting-permission')
     emit('hero_immersion_started')
     requestPortraitLock()
 
     const access = await requestOrientationAccess()
+    busyLockRef.current = false
+    setBusy(null)
 
     if (access === 'error') {
       setStatus('error')
@@ -416,14 +424,24 @@ export default function HeroPhysicsExperience({
 
     emit('hero_immersion_fallback_used')
     prepareParticleRun('fallback', 'unsupported')
-  }, [emit, prepareParticleRun, requestPortraitLock])
+  }, [emit, prepareParticleRun, requestPortraitLock, status])
 
   const resetExperience = useCallback(() => {
+    if (busyLockRef.current) return // evita resets simultâneos
+    busyLockRef.current = true
+    setBusy('resetting')
+
     const fallbackStatus = status === 'denied' ? 'denied' : 'unsupported'
     const nextStatus = sensorModeRef.current === 'sensor' ? 'active' : fallbackStatus
 
     emit('hero_immersion_reset')
     prepareParticleRun(sensorModeRef.current, nextStatus)
+
+    // feedback perceptível + janela anti-clique-duplo
+    window.setTimeout(() => {
+      busyLockRef.current = false
+      setBusy(null)
+    }, 380)
   }, [emit, prepareParticleRun, status])
 
   const exitExperience = useCallback(() => {
@@ -432,8 +450,31 @@ export default function HeroPhysicsExperience({
     releasePortraitLock()
     sensorModeRef.current = 'fallback'
     setSensorMode('fallback')
+    busyLockRef.current = false
+    setBusy(null)
     setStatus('completed')
   }, [emit, releasePortraitLock, teardownPhysics])
+
+  /* saiu do estado ativo (Sair/Escape) → devolve o foco ao gatilho */
+  useEffect(() => {
+    if (status === 'completed') triggerRef.current?.focus({ preventScroll: true })
+  }, [status])
+
+  /* rolou para fora do hero com a experiência ativa → encerra e limpa tudo.
+     A experiência pertence ao hero; nunca vira overlay sobre o resto do site. */
+  useEffect(() => {
+    if (!active) return
+    const el = layerRef.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) exitExperience()
+      },
+      { threshold: 0.02 },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [active, exitExperience])
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -809,39 +850,63 @@ export default function HeroPhysicsExperience({
   }, [active, exitExperience])
 
   const message = statusText(status, sensorMode, copy)
-  const canTrigger = status === 'idle' || status === 'completed' || status === 'error'
-  const showControls = active
+  const starting = status === 'requesting-permission' || busy === 'starting'
+  const canTrigger = (status === 'idle' || status === 'completed' || status === 'error') && !starting
 
+  /* A cápsula de experiência: um único controle com três estados —
+     repouso (ativar) · transição (iniciando/reiniciando) · painel ativo (reiniciar/sair). */
   return (
     <div className={`x-physics ${active ? 'is-physics-on' : ''} is-${status}`} data-status={status}>
       <div ref={layerRef} className="x-physics-layer" aria-hidden={!active}>
         <canvas ref={canvasRef} className="x-particle-canvas" />
       </div>
 
-      <div className="x-physics-console" aria-live="polite">
-        {canTrigger && (
-          <button className="x-btn x-btn-solid x-physics-trigger" type="button" onClick={beginExperience} data-x="">
-            {copy.trigger}
+      <div
+        className={`x-capsule ${active ? 'is-live' : ''} ${starting || busy === 'resetting' ? 'is-busy' : ''}`}
+        role="group"
+        aria-label="Controles da experiência interativa"
+      >
+        {status === 'reduced-motion' ? (
+          <p className="x-capsule-status" role="status">{message}</p>
+        ) : !active ? (
+          <button
+            ref={triggerRef}
+            className="x-capsule-trigger"
+            type="button"
+            onClick={beginExperience}
+            disabled={!canTrigger}
+            aria-label="Ativar experiência interativa no título"
+            data-x=""
+          >
+            <i className="x-capsule-dot" aria-hidden="true" />
+            <span>{starting ? 'Iniciando…' : copy.trigger}</span>
           </button>
-        )}
-        {status === 'reduced-motion' && (
-          <p className="x-physics-status x-mono">{message}</p>
-        )}
-        {status === 'requesting-permission' && (
-          <p className="x-physics-status x-mono">{message}</p>
-        )}
-        {showControls && (
+        ) : (
           <>
-            <div className="x-physics-hint">
-              <p className="x-mono">{message}</p>
-              <span>{status === 'active' ? copy.activeCaption : copy.fallbackCaption}</span>
-            </div>
-            <div className="x-physics-actions">
-              <button className="x-physics-action x-mono" type="button" onClick={resetExperience}>
-                {copy.reset}
+            <p className="x-capsule-status" role="status" aria-live="polite">
+              <i className="x-capsule-dot is-on" aria-hidden="true" />
+              <span>{busy === 'resetting' ? 'Reiniciando…' : message}</span>
+            </p>
+            <div className="x-capsule-actions">
+              <button
+                className="x-capsule-btn"
+                type="button"
+                onClick={resetExperience}
+                disabled={busy != null}
+                aria-label="Reiniciar a experiência"
+                data-x=""
+              >
+                Reiniciar
               </button>
-              <button className="x-physics-action x-mono" type="button" onClick={exitExperience}>
-                {copy.exit}
+              <button
+                className="x-capsule-btn is-exit"
+                type="button"
+                onClick={exitExperience}
+                disabled={starting}
+                aria-label="Sair da experiência"
+                data-x=""
+              >
+                Sair
               </button>
             </div>
           </>

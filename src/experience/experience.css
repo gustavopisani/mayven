@@ -374,9 +374,11 @@ body[data-xtheme='light'] .x-vignette { opacity: 0; }
   z-index: 12;
   pointer-events: none;
 }
+/* A experiência pertence ao hero: nunca vira overlay fixo sobre o site.
+   Ao rolar para fora, o componente encerra sozinho (auto-exit). Nav (z:100)
+   permanece sempre acima e clicável. */
 .x-physics.is-physics-on {
-  position: fixed;
-  z-index: 120;
+  z-index: 40;
 }
 .x-physics-layer {
   position: absolute;
@@ -415,61 +417,122 @@ body[data-xtheme='light'] .x-vignette { opacity: 0; }
   user-select: none;
   will-change: transform;
 }
-.x-physics-console {
+/* ---------- cápsula de experiência ----------
+   Desktop: parte da composição do hero — alinhada ao grid da copy (left: 7vw,
+   o mesmo padding do .x-ch-view), na base do quadro. Mobile: centralizada na
+   zona do polegar, acima da barra do navegador (safe-area), com espaço
+   reservado no hero para nunca sobrepor os CTAs. */
+/* o hero reserva a faixa inferior para a cápsula — a copy centralizada nunca a alcança */
+.x-hero .x-ch-view { padding-bottom: 132px; }
+.x-capsule {
   position: absolute;
-  left: clamp(18px, 8vw, 142px);
-  top: calc(50% + clamp(170px, 18vh, 230px));
-  z-index: 14;
+  left: 7vw;
+  bottom: 48px;
+  z-index: 30; /* sempre acima da camada de partículas (que não tem z próprio) */
   display: flex;
   align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-  max-width: min(680px, 78vw);
+  gap: 10px;
+  padding: 6px;
+  max-width: min(520px, 40vw); /* nunca alcança o scrollcue central */
+  background: rgba(10, 10, 13, 0.72);
+  border: 1px solid rgba(244, 241, 234, 0.16);
+  border-radius: 999px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   pointer-events: auto;
+  touch-action: manipulation;
+  transition: border-color 0.35s, background 0.35s;
 }
-.x-physics-trigger {
-  min-height: 44px;
-  min-width: 150px;
+.x-capsule.is-live {
+  border-color: rgba(236, 11, 87, 0.45);
+  padding: 6px 6px 6px 16px;
 }
-.x-physics-status {
-  max-width: 42ch;
-  color: rgba(244, 241, 234, 0.62);
-  text-shadow: 0 2px 18px rgba(5, 5, 6, 0.9);
+.x-capsule.is-busy .x-capsule-dot { animation: x-capsule-pulse 0.9s ease-in-out infinite; }
+.x-capsule-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(244, 241, 234, 0.45);
+  transition: background 0.3s, box-shadow 0.3s;
 }
-.x-physics-hint {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  max-width: 34ch;
-  text-shadow: 0 2px 18px rgba(5, 5, 6, 0.9);
+.x-capsule-dot.is-on {
+  background: var(--xm);
+  box-shadow: 0 0 10px rgba(236, 11, 87, 0.7);
+  animation: x-capsule-pulse 2.2s ease-in-out infinite;
 }
-.x-physics-hint .x-mono {
-  color: var(--xl);
-  font-size: 10px;
+@keyframes x-capsule-pulse {
+  50% { opacity: 0.35; }
 }
-.x-physics-hint span {
-  color: rgba(244, 241, 234, 0.72);
-  font-size: 13px;
-}
-.x-physics-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.x-physics-action {
+.x-capsule-trigger {
   appearance: none;
-  border: 1px solid rgba(244, 241, 234, 0.42);
-  background: rgba(5, 5, 6, 0.28);
+  border: 0;
+  background: transparent;
+  color: var(--xw);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 18px 0 12px;
+  font-family: var(--xmono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-radius: 999px;
+  transition: color 0.25s;
+}
+.x-capsule-trigger:hover:not(:disabled) { color: var(--xm); }
+.x-capsule-trigger:hover:not(:disabled) .x-capsule-dot { background: var(--xm); }
+.x-capsule-trigger:disabled { opacity: 0.6; }
+.x-capsule-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  min-width: 0;
+  color: rgba(244, 241, 234, 0.78);
+  font-family: var(--xmono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.x-capsule-status span { overflow: hidden; text-overflow: ellipsis; }
+.x-capsule-actions {
+  flex: none;
+  display: flex;
+  gap: 6px;
+}
+.x-capsule-btn {
+  appearance: none;
+  border: 1px solid rgba(244, 241, 234, 0.28);
+  background: rgba(244, 241, 234, 0.06);
   color: var(--xw);
   min-height: 44px;
-  padding: 11px 13px;
+  min-width: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-family: var(--xmono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   transition: background 0.25s, border-color 0.25s, color 0.25s;
 }
-.x-physics-action:hover {
+.x-capsule-btn:hover:not(:disabled) {
   background: var(--xw);
   border-color: var(--xw);
   color: var(--xk);
 }
+.x-capsule-btn.is-exit { border-color: rgba(236, 11, 87, 0.55); }
+.x-capsule-btn.is-exit:hover:not(:disabled) {
+  background: var(--xm);
+  border-color: var(--xm);
+  color: var(--xw);
+}
+.x-capsule-btn:disabled { opacity: 0.55; }
 .x-hero.is-immersive-active .x-hero-title {
   opacity: 0;
   visibility: hidden;
@@ -637,7 +700,9 @@ body[data-xtheme='light'] .x-btn:hover { color: var(--xw); }
   .x-echo::before { display: none; }
   .x-foot { grid-template-columns: 1fr 1fr; }
   .x-hero-copy { width: auto; max-width: 92vw; margin-left: 0; padding-top: 12vh; }
-  .x-hero-title { font-size: clamp(52px, 17vw, 96px); }
+  /* headline longo (3 linhas): tamanho que caiba com os CTAs acima da cápsula */
+  .x-hero-title { font-size: clamp(34px, 11.5vw, 64px); }
+  .x-hero-sub { font-size: 14px; margin-top: 10px; }
   .x-hero-ctas { flex-direction: column; align-items: flex-start; gap: 10px; }
   .x-hero-ctas .x-btn { width: min(100%, 360px); white-space: normal; text-align: center; }
   .x-scrollcue { display: none; }
@@ -653,23 +718,24 @@ body[data-xtheme='light'] .x-btn:hover { color: var(--xw); }
       linear-gradient(90deg, rgba(5, 5, 6, 0.58), rgba(5, 5, 6, 0.2));
   }
   .x-hero-film video, .x-hero-poster { object-position: center center; }
-  .x-physics-console {
-    left: 22px;
-    right: 22px;
-    top: auto;
-    bottom: calc(22px + env(safe-area-inset-bottom));
-    max-width: none;
-    gap: 10px;
+  /* cápsula na zona do polegar, acima da barra do navegador. O hero empilha a
+     partir do topo (não centraliza): a zona inferior fica ESTRUTURALMENTE livre
+     — os CTAs nunca alcançam a região da cápsula, em nenhuma altura de tela. */
+  .x-hero .x-ch-view {
+    justify-content: flex-start;
+    padding-top: calc(76px + 5vh);
+    padding-bottom: calc(112px + env(safe-area-inset-bottom));
   }
-  .x-physics-trigger {
-    min-width: 0;
-    width: auto;
+  .x-hero-copy { padding-top: 0 !important; }
+  .x-capsule {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    max-width: calc(100vw - 32px);
   }
+  .x-capsule-status { max-width: 34vw; }
   .x-phys-fragment {
     font-size: clamp(52px, 17vw, 96px);
-  }
-  .x-physics-hint {
-    flex: 1 1 180px;
   }
 }
 @media (max-width: 860px) and (orientation: landscape) and (max-height: 520px) {
@@ -692,13 +758,11 @@ body[data-xtheme='light'] .x-btn:hover { color: var(--xw); }
   .x-hero-ctas {
     margin-top: 18px;
   }
-  .x-physics-console {
-    left: calc(18px + env(safe-area-inset-left));
-    right: calc(18px + env(safe-area-inset-right));
-    bottom: calc(14px + env(safe-area-inset-bottom));
-  }
-  .x-physics-hint span {
-    display: none;
+  .x-capsule {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    max-width: calc(100vw - 2 * (18px + env(safe-area-inset-left)));
   }
 }
 
@@ -713,5 +777,5 @@ body[data-xtheme='light'] .x-btn:hover { color: var(--xw); }
   .x-hero-film video { display: none; }
   .x-physics-layer { display: none; }
   .x-particle-canvas { display: none; }
-  .x-physics-console { position: absolute; }
+  .x-capsule-dot, .x-capsule-dot.is-on { animation: none !important; }
 }
