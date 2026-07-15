@@ -18,6 +18,15 @@ export type CaseStudy = {
   sistema?: string[] // tecnologias, canais, disciplinas
   impacto?: string // só quantitativo/qualitativo REAL
   media?: CaseMedia[]
+  /* apresentação (CasesSection) — category/description/services derivam do conteúdo
+     real acima; image/video apontam p/ public/assets/cases (placeholder até existirem) */
+  category?: string
+  description?: string
+  year?: string
+  services?: string[]
+  image?: string
+  video?: string
+  href?: string
 }
 
 export const CASES: CaseStudy[] = [
@@ -44,6 +53,13 @@ export const CASES: CaseStudy[] = [
       'Conteúdo de lançamento',
     ],
     media: [],
+    category: 'Presença · Commerce · Live & conectado',
+    description:
+      'O café como experiência sensorial completa: uma marca que se percebe antes mesmo de se provar.',
+    year: '2026',
+    services: ['Branding', 'Site WebGL', 'E-commerce', 'CRM · WhatsApp', 'Totem + AR'],
+    image: '/assets/cases/aura-cafe-cover.webp',
+    video: '/assets/cases/aura-cafe.mp4',
   },
   {
     slug: 'proximo-case-digital',

@@ -16,10 +16,10 @@ const CHARCOAL = '#131419'
 const CHARCOAL2 = '#1d1f26'
 const BONE = '#f4f1ea'
 const MAGENTA = '#ec0b57'
-const LIME = '#d7ff3f'
 
-/* light amount for a given progress — the two bone zones, with a WIDE feather:
-   the background crossfades over ~a full viewport of scroll instead of snapping */
+/* light amount for a given progress — the single bone zone, with a WIDE feather:
+   the background crossfades over ~a full viewport of scroll instead of snapping.
+   (Cases deixou de ser zona clara: o capítulo tem superfície escura opaca própria.) */
 function lightAt(p: number) {
   const zone = (a: number, b: number) => {
     const f = 0.05
@@ -28,41 +28,13 @@ function lightAt(p: number) {
       1 - THREE.MathUtils.smoothstep(p, b - f, b + f * 0.3),
     )
   }
-  return Math.max(zone(CH.manifesto[0], CH.presenca[1]), zone(CH.cases[0], CH.cases[1]))
+  return zone(CH.manifesto[0], CH.presenca[1])
 }
 
-/* ---------- HERO + CTA: the sheet stack — layered interface matter ---------- */
-const SHEET_COLORS = [CHARCOAL, CHARCOAL2, MAGENTA, CHARCOAL, BONE, CHARCOAL2, CHARCOAL]
-function SheetStack({ z, spreadRange, scale = 1 }: { z: number; spreadRange: [number, number]; scale?: number }) {
-  const group = useRef<THREE.Group>(null!)
-  useFrame((st) => {
-    const t = st.clock.elapsedTime
-    const g = group.current
-    // the whole stack leans into the cursor
-    g.rotation.x = lerp(g.rotation.x, xstore.my * 0.28, 0.06)
-    g.rotation.y = lerp(g.rotation.y, xstore.mx * 0.5, 0.06)
-    // scroll fans the sheets apart
-    const local = THREE.MathUtils.clamp((xstore.p - spreadRange[0]) / (spreadRange[1] - spreadRange[0]), 0, 1)
-    g.children.forEach((c, i) => {
-      const k = i - (SHEET_COLORS.length - 1) / 2
-      c.position.z = k * (0.34 + local * 1.5)
-      // each sheet slides against the cursor with its own depth factor — parallax fan
-      c.position.x = lerp(c.position.x, -xstore.mx * k * 0.34, 0.08)
-      c.position.y = lerp(c.position.y, xstore.my * k * 0.22 + Math.sin(t * 0.6 + i) * 0.05, 0.08)
-      c.rotation.z = Math.sin(t * 0.3 + i * 0.8) * 0.015 + local * k * 0.03
-    })
-  })
-  return (
-    <group ref={group} position={[0, 0, z]} scale={scale}>
-      {SHEET_COLORS.map((c, i) => (
-        <mesh key={i}>
-          <boxGeometry args={[5.4, 3.3, 0.05]} />
-          <meshStandardMaterial color={c} roughness={0.85} metalness={0.05} />
-        </mesh>
-      ))}
-    </group>
-  )
-}
+/* ---------- HERO + CONTATO: sem objetos 3D ----------
+   O SheetStack (leque de placas do hero/contato) foi removido: o finale é um
+   painel DOM opaco (ContactFinale) e o hero tem o filme próprio — o canvas
+   fica visualmente silencioso nesses trechos. */
 
 /* ---------- CONSTRUÍMOS PRESENÇA: fragmentos dispersos se organizam numa estrutura ----------
    Assinatura do território: composição, repetição, consistência — a formação de um todo.
@@ -99,8 +71,15 @@ function PixelWall({ cols, rows }: { cols: number; rows: number }) {
     const t = st.clock.elapsedTime
     const cam = st.camera
     // progresso local do capítulo: 0 = caos disperso · 1 = estrutura montada
-    const local = THREE.MathUtils.clamp((xstore.p - CH.presenca[0]) / (CH.presenca[1] - CH.presenca[0]), 0, 1)
+    const localRaw = (xstore.p - CH.presenca[0]) / (CH.presenca[1] - CH.presenca[0])
+    // fora do capítulo a parede NÃO existe — nenhum fragmento vaza para as seções vizinhas
+    const on = localRaw > -0.45 && localRaw < 1.08
+    inst.current.visible = on
+    if (!on) return
+    const local = THREE.MathUtils.clamp(localRaw, 0, 1)
     const assemble = THREE.MathUtils.smoothstep(local, 0.05, 0.6)
+    // a parede se desfaz enquanto a superfície preta de "experiências" cobre a viewport
+    const endK = 1 - THREE.MathUtils.smoothstep(localRaw, 0.68, 1.02)
     // project the pointer onto the wall plane (approximation by camera frustum at wall depth)
     const dist = Math.abs(cam.position.z - z)
     const halfH = Math.tan(((cam as THREE.PerspectiveCamera).fov * Math.PI) / 360) * dist
@@ -121,7 +100,7 @@ function PixelWall({ cols, rows }: { cols: number; rows: number }) {
         const gy = THREE.MathUtils.lerp(scatter[i * 3 + 1], y, assemble)
         const gz = THREE.MathUtils.lerp(scatter[i * 3 + 2], wave + ripple * 0.9, assemble)
         dummy.position.set(gx, gy, z + gz)
-        const s = (0.35 + assemble * 0.65) * (1 + ripple * 0.9)
+        const s = (0.35 + assemble * 0.65) * (1 + ripple * 0.9) * endK
         dummy.scale.set(s, s, 1)
         dummy.rotation.set(0, 0, (1 - assemble) * scatter[i * 3 + 2] * 0.2)
         dummy.updateMatrix()
@@ -138,116 +117,18 @@ function PixelWall({ cols, rows }: { cols: number; rows: number }) {
   )
 }
 
-/* ---------- TIPOS DE EXPERIÊNCIA: um mesmo objeto, três estados ----------
-   Digital (magenta) · Marca & comércio (azul) · Live & conectado (lima).
-   O monólito dá meia-volta a cada manifestação — três modos do mesmo sistema. */
-const BAR_COLORS = [MAGENTA, '#2d6cff', LIME]
-function BuildMonolith() {
-  const group = useRef<THREE.Group>(null!)
-  const barF = useRef<THREE.Mesh>(null!)
-  const barB = useRef<THREE.Mesh>(null!)
-  const rot = useRef(0)
-  useFrame((st) => {
-    const t = st.clock.elapsedTime
-    const local = (xstore.p - CH.tipos[0]) / (CH.tipos[1] - CH.tipos[0])
-    const g = group.current
-    g.visible = local > -0.12 && local < 1.12
-    if (!g.visible) return
-    const idx = THREE.MathUtils.clamp(Math.floor(local * 3), 0, 2)
-    // it rides ahead of the camera through the whole chapter…
-    g.position.z = st.camera.position.z - 9
-    g.position.x = 2.6 + Math.sin(t * 0.4) * 0.08
-    g.position.y = Math.sin(t * 0.7) * 0.1
-    // …and flips half a turn every time the system changes
-    rot.current = lerp(rot.current, idx * Math.PI, 0.08)
-    g.rotation.y = rot.current + xstore.mx * 0.14
-    g.rotation.x = -xstore.my * 0.1
-    const c = new THREE.Color(BAR_COLORS[idx])
-    ;(barF.current.material as THREE.MeshBasicMaterial).color.lerp(c, 0.1)
-    ;(barB.current.material as THREE.MeshBasicMaterial).color.lerp(c, 0.1)
-  })
-  return (
-    <group ref={group}>
-      <mesh>
-        <boxGeometry args={[5.4, 3.4, 0.2]} />
-        <meshStandardMaterial color={CHARCOAL} roughness={0.7} metalness={0.12} />
-      </mesh>
-      <mesh ref={barF} position={[-2.45, 0, 0.13]}>
-        <boxGeometry args={[0.16, 3.4, 0.05]} />
-        <meshBasicMaterial color={MAGENTA} />
-      </mesh>
-      <mesh ref={barB} position={[2.45, 0, -0.13]}>
-        <boxGeometry args={[0.16, 3.4, 0.05]} />
-        <meshBasicMaterial color={MAGENTA} />
-      </mesh>
-    </group>
-  )
-}
+/* ---------- TIPOS DE EXPERIÊNCIA: sem objeto 3D ----------
+   O antigo monólito (cartão WebGL) foi migrado para DOM: o cartão de vídeo vive
+   DENTRO da view sticky de #c-tipos (TypeCard em Journey.tsx), dirigido pela mesma
+   fonte de verdade (typeIdx) que a lista e os textos — e não pode vazar para
+   Método porque sai de cena junto com o capítulo. */
 
-/* ---------- CRIAMOS EXPERIÊNCIAS: o portal que se atravessa + telas/dispositivos reativos ----------
-   Assinatura do território: resposta, interação, conexão — tudo aqui reage ao cursor. */
-function ImmersiveGate() {
-  const group = useRef<THREE.Group>(null!)
-  const devices = useRef<THREE.Group>(null!)
-  const z = zAt((CH.experiencias[0] + CH.experiencias[1]) / 2)
-  const DEVICES = useMemo(() => {
-    const v3 = (x: number, y: number, z: number): [number, number, number] => [x, y, z]
-    return [
-      { s: v3(1.05, 2.5, 0.1), p: v3(-3.6, -0.4, -5), c: CHARCOAL }, // totem
-      { s: v3(0.75, 1.5, 0.08), p: v3(3.2, 0.8, -3.4), c: CHARCOAL2 }, // phone
-      { s: v3(1.8, 1.2, 0.08), p: v3(4.1, -1.1, -7), c: CHARCOAL }, // tablet
-      { s: v3(0.55, 0.55, 0.08), p: v3(-2.9, 1.5, -2.6), c: MAGENTA }, // wearable
-      { s: v3(2.6, 1.5, 0.09), p: v3(0.4, 2, -8.5), c: CHARCOAL2 }, // wall screen
-    ]
-  }, [])
-  useFrame((st) => {
-    const t = st.clock.elapsedTime
-    // the gate breathes and leans with the cursor — you fly through the "lens"
-    group.current.rotation.z = Math.sin(t * 0.2) * 0.03 + xstore.mx * 0.05
-    group.current.rotation.y = xstore.mx * 0.12
-    group.current.rotation.x = -xstore.my * 0.1
-    devices.current.children.forEach((c, i) => {
-      const d = DEVICES[i]
-      c.position.x = lerp(c.position.x, d.p[0] + xstore.mx * (2.2 + i * 0.5) * 0.4, 0.05)
-      c.position.y = lerp(c.position.y, d.p[1] - xstore.my * (1.6 + i * 0.4) * 0.4 + Math.sin(t * 0.5 + i * 2) * 0.12, 0.05)
-      c.rotation.y = Math.sin(t * 0.3 + i) * 0.08 + xstore.mx * 0.15
-    })
-  })
-  const frame = 0.16
-  return (
-    <group position={[0, 0, z]}>
-      <group ref={group}>
-        {/* the AR viewport frame */}
-        {(
-          [
-            [0, 2.3, 7.4, frame],
-            [0, -2.3, 7.4, frame],
-            [-3.7, 0, frame, 4.76],
-            [3.7, 0, frame, 4.76],
-          ] as [number, number, number, number][]
-        ).map(([x, y, w, h], i) => (
-          <mesh key={i} position={[x, y, 0]}>
-            <boxGeometry args={[w, h, 0.16]} />
-            <meshStandardMaterial color={BONE} roughness={0.6} />
-          </mesh>
-        ))}
-        <mesh position={[3.7, 2.3, 0.02]}>
-          <boxGeometry args={[0.9, frame, 0.18]} />
-          <meshBasicMaterial color={MAGENTA} />
-        </mesh>
-      </group>
-      {/* the physical world behind the lens */}
-      <group ref={devices}>
-        {DEVICES.map((d, i) => (
-          <mesh key={i} position={d.p} scale={1}>
-            <boxGeometry args={d.s} />
-            <meshStandardMaterial color={d.c} roughness={0.7} metalness={0.12} />
-          </mesh>
-        ))}
-      </group>
-    </group>
-  )
-}
+/* ---------- CRIAMOS EXPERIÊNCIAS: sem objeto 3D ----------
+   A partir deste capítulo a linguagem muda de "viajar por um cenário 3D" para
+   "atravessar uma composição editorial viva" — a seção é 100% DOM (ver
+   ExperienceEditorial em Journey.tsx), com superfície preta opaca cobrindo a
+   viewport. O mundo não coloca NADA neste trecho nem no seguinte: a PixelWall se
+   desfaz no fim de presença (endK) e "tipos" é dirigido inteiramente no DOM. */
 
 /* ---------- MÉTODO: a mesma geometria atravessa 4 estágios até ganhar presença ----------
    Entender = pontos observados · Imaginar = linhas conectam · Construir = matéria · Ativar = energia.
@@ -305,42 +186,10 @@ function MethodMaterialize() {
   )
 }
 
-/* ---------- CASES: painéis editoriais — cards escuros sobre a zona bone ---------- */
-function Gallery() {
-  const group = useRef<THREE.Group>(null!)
-  const z0 = zAt(CH.cases[0]) - 4
-  const frames = useMemo(
-    () =>
-      Array.from({ length: 3 }, (_, i) => ({
-        z: z0 - i * 6.4,
-        x: i % 2 === 0 ? -3.4 : 3.4,
-        y: (i % 3) * 0.7 - 0.7,
-      })),
-    [z0],
-  )
-  useFrame((st) => {
-    group.current.children.forEach((c, i) => {
-      c.rotation.y = (frames[i].x > 0 ? -0.3 : 0.3) + xstore.mx * 0.1
-      c.position.y = frames[i].y + Math.sin(st.clock.elapsedTime * 0.4 + i * 1.6) * 0.1
-    })
-  })
-  return (
-    <group ref={group}>
-      {frames.map((f, i) => (
-        <group key={i} position={[f.x, f.y, f.z]}>
-          <mesh>
-            <boxGeometry args={[4.4, 2.7, 0.1]} />
-            <meshStandardMaterial color={CHARCOAL} roughness={0.7} />
-          </mesh>
-          <mesh position={[-1.35, -0.95, 0.07]}>
-            <boxGeometry args={[1.4, 0.16, 0.03]} />
-            <meshBasicMaterial color={MAGENTA} />
-          </mesh>
-        </group>
-      ))}
-    </group>
-  )
-}
+/* ---------- CASES: sem objeto 3D ----------
+   A Gallery (painéis atravessando a câmera) foi removida: os cases são um
+   capítulo editorial DOM opaco (CasesSection) — o canvas fica silencioso
+   neste trecho, apenas fundo neutro atrás da superfície da seção. */
 
 /* ---------- camera rig + theme lerp ---------- */
 function Rig() {
@@ -405,11 +254,7 @@ export default function World({ active }: { active: boolean }) {
       <directionalLight position={[4, 7, 6]} intensity={1.6} />
       <directionalLight position={[-5, -3, 2]} intensity={0.5} color="#ffd9e6" />
       <PixelWall cols={med ? 34 : 50} rows={med ? 20 : 29} />
-      <ImmersiveGate />
-      <BuildMonolith />
       <MethodMaterialize />
-      <Gallery />
-      <SheetStack z={zAt(0.955)} spreadRange={[CH.contato[0], 1]} scale={1.15} />
     </Canvas>
   )
 }

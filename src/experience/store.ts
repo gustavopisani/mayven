@@ -31,17 +31,20 @@ export function detectQuality(): XQuality {
 }
 
 /* chapter map — fractions of the master journey (world stations + DOM sync).
-   Narrativa: manifesto → presença → experiências → 3 manifestações → método → cases → contato.
-   Alturas: 130 + 400 + 220 + 220 + 300 + 280 + 260 + 230 = 2060vh (scroll útil 1960vh). */
+   Narrativa: manifesto → presença → experiências (capítulo editorial DOM) →
+   3 manifestações → método → cases (capítulo editorial DOM) → finale.
+   Alturas: 130 + 400 + 220 + 460 + 300 + 280 + 420 + ~280 = ~2490vh (scroll útil ~2390vh).
+   O finale usa min-height (conteúdo dinâmico) — pequenas variações são absorvidas
+   pela histerese do tema e pelo feather do mundo. */
 export const CH = {
-  hero: [0.0, 0.067],
-  manifesto: [0.055, 0.273], // ← primeira zona bone; início adiantado p/ o tema clarear junto com a folha que cobre o hero
-  presenca: [0.273, 0.387], // a zona bone segue direto do manifesto até aqui
-  experiencias: [0.387, 0.5], // volta ao escuro (resposta, reação, movimento)
-  tipos: [0.5, 0.655], // 3 manifestações de experiência
-  metodo: [0.655, 0.8], // Entender → Imaginar → Construir → Ativar
-  cases: [0.8, 0.933], // ← segunda zona bone (editorial)
-  contato: [0.933, 1.0],
+  hero: [0.0, 0.054],
+  manifesto: [0.044, 0.222], // ← única zona bone; início adiantado p/ o tema clarear junto com a folha que cobre o hero
+  presenca: [0.222, 0.314], // a zona bone segue direto do manifesto até aqui
+  experiencias: [0.314, 0.506], // capítulo editorial: superfície preta opaca cobre o mundo (quebra da linguagem 3D)
+  tipos: [0.506, 0.632], // 3 manifestações de experiência (cartões DOM)
+  metodo: [0.632, 0.749], // Entender → Imaginar → Construir → Ativar
+  cases: [0.749, 0.925], // capítulo editorial escuro opaco (CasesSection)
+  contato: [0.925, 1.0], // finale DOM opaco (ContactFinale) — canvas mudo
 } as const
 
 export const DEPTH = 240 // world length in units — camera travels 0 → -DEPTH

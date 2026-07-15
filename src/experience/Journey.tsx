@@ -4,8 +4,9 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
 import { CH, detectQuality, xstore } from './store'
 import HeroPhysicsExperience from './HeroPhysicsExperience'
-import ContactForm from './ContactForm'
-import { CASES } from './data/cases'
+import { useHeroVariant, usePrefersReducedMotion } from './hooks'
+import CasesSection from './CasesSection'
+import ContactFinale from './ContactFinale'
 import './experience.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -24,35 +25,6 @@ const HERO_FILMS = {
     poster: '/assets/video/mayven-hero-poster-mobile.webp',
   },
 } as const
-
-function useHeroVariant() {
-  const getVariant = () => {
-    if (typeof window === 'undefined') return 'desktop' as const
-    return window.matchMedia('(max-width: 860px), (orientation: portrait)').matches ? 'mobile' : 'desktop'
-  }
-  const [variant, setVariant] = useState<'desktop' | 'mobile'>(getVariant)
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 860px), (orientation: portrait)')
-    const update = () => setVariant(mq.matches ? 'mobile' : 'desktop')
-    update()
-    mq.addEventListener('change', update)
-    return () => mq.removeEventListener('change', update)
-  }, [])
-  return variant
-}
-
-function usePrefersReducedMotion() {
-  const getReduced = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const [reduced, setReduced] = useState(getReduced)
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const update = () => setReduced(mq.matches)
-    update()
-    mq.addEventListener('change', update)
-    return () => mq.removeEventListener('change', update)
-  }, [])
-  return reduced
-}
 
 function HeroFilm() {
   const variant = useHeroVariant()
@@ -132,21 +104,29 @@ function HeroFilm() {
 /* frases do manifesto — recuperadas da versão anterior da home (componente Manifesto) */
 const SLAMS = ['Posts iguais.', 'Sites iguais.', 'Campanhas iguais.', 'Marcas esquecíveis.']
 
+/* vídeos: colocar os arquivos em public/assets/video/ com estes nomes (ver README de lá).
+   Enquanto não existirem, o cartão mostra o placeholder editorial (nunca tela preta). */
 const TYPES = [
   {
     t: 'Experiências digitais',
     d: 'Sites, aplicativos, plataformas, e-commerce, marketplaces, interfaces interativas, WebGL, 3D e produtos digitais.',
     sig: ['PIXELS', 'GRIDS', 'SUPERFÍCIES', 'LUZ'],
+    video: '/assets/video/type-digital.mp4',
+    poster: '/assets/video/type-digital-poster.webp',
   },
   {
     t: 'Experiências de marca e comércio',
     d: 'Jornadas de compra, personalização, CRM, WhatsApp, atendimento, relacionamento, campanhas e experiências omnicanal.',
     sig: ['FLUXOS', 'JORNADAS', 'CONEXÕES', 'SINAIS'],
+    video: '/assets/video/type-commerce.mp4',
+    poster: '/assets/video/type-commerce-poster.webp',
   },
   {
     t: 'Experiências live e conectadas',
     d: 'Eventos, ativações, lançamentos, totens, instalações, gamificação, realidade aumentada, realidade virtual, sensores, IoT e ambientes interativos.',
     sig: ['ESPAÇOS', 'SENSORES', 'ONDAS', 'PRESENÇA FÍSICA'],
+    video: '/assets/video/type-live.mp4',
+    poster: '/assets/video/type-live-poster.webp',
   },
 ]
 
@@ -448,6 +428,250 @@ function ManifestoChapter() {
   )
 }
 
+/* ---------------- criamos experiências: capítulo editorial (quebra de linguagem) ----------------
+   A partir daqui a navegação muda de "viajar por um cenário 3D" para "atravessar uma
+   composição editorial viva" — princípio de navegação da seção de projetos do fatfish.ca,
+   sem copiar a identidade. Superfície preta opaca cobre progressivamente a viewport (o
+   mundo WebGL fica fora de cena), o título entra linha a linha por máscaras com direções/
+   escalas/velocidades distintas, e o conteúdo se compõe em camadas tipográficas guiadas
+   pelo scroll: linha-guia, faixa que atravessa a tela, selos que se organizam em índice,
+   punch final e uma deixa que conduz às três manifestações de "Tipos". Micro-paralaxe de
+   cursor nas camadas (desktop). Mobile: mesma linguagem, amplitudes e tipografia adaptadas. */
+const XED_STAMPS = ['DIGITAL', 'COMMERCE', 'APPS', 'AR / VR', 'IOT', 'EVENTOS', 'LANÇAMENTOS']
+/* dispersão determinística dos selos antes de se organizarem em índice */
+const XED_SCATTER = [
+  { x: -150, y: -96, r: -8 },
+  { x: 120, y: -150, r: 6 },
+  { x: -58, y: -210, r: -4 },
+  { x: 205, y: -60, r: 9 },
+  { x: -225, y: -160, r: 5 },
+  { x: 92, y: -240, r: -7 },
+  { x: -18, y: -46, r: 3 },
+]
+
+function ExperienceEditorial() {
+  const secRef = useRef<HTMLElement>(null)
+  const variant = useHeroVariant()
+  const reduced = usePrefersReducedMotion()
+
+  useEffect(() => {
+    if (reduced) return
+    const mobile = variant === 'mobile'
+    const k = mobile ? 0.3 : 1 // amplitudes bem menores no mobile (selos nunca saem muito da tela)
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: secRef.current,
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: mobile ? 0.35 : 0.5,
+        },
+      })
+      /* A — o título assume: linhas por máscara, direções/escalas/velocidades distintas */
+      tl.fromTo('.xed-t1', { xPercent: -112 }, { xPercent: 0, duration: 1.0, ease: 'power4.out', immediateRender: true }, 0)
+      tl.fromTo(
+        '.xed-t2',
+        { xPercent: 116, scale: 1.14, transformOrigin: 'left center' },
+        { xPercent: 0, scale: 1, duration: 1.25, ease: 'power4.out', immediateRender: true },
+        0.18,
+      )
+      tl.fromTo('.xed-eyebrow', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.5, immediateRender: true }, 0.55)
+      /* palavra-eco em outline atravessa a tela no seu próprio ritmo (parallax 2D) */
+      tl.fromTo('.xed-echo', { opacity: 0 }, { opacity: 0.3, duration: 0.6, immediateRender: true }, 0.4)
+      tl.fromTo('.xed-echo', { xPercent: 26 }, { xPercent: -48, duration: 6.6, ease: 'none', immediateRender: true }, 0.4)
+      /* B — a composição editorial cresce em camadas */
+      tl.fromTo(
+        '.xed-lead',
+        { clipPath: 'inset(0 0 100% 0)', y: 40 },
+        { clipPath: 'inset(0 0 0% 0)', y: 0, duration: 0.9, ease: 'power3.out', immediateRender: true },
+        1.55,
+      )
+      tl.fromTo('.xed-strip', { opacity: 0 }, { opacity: 1, duration: 0.4, immediateRender: true }, 2.05)
+      tl.fromTo(
+        '.xed-strip',
+        { xPercent: mobile ? 40 : 22 },
+        { xPercent: mobile ? -95 : -58, duration: 4.3, ease: 'none', immediateRender: true },
+        2.05,
+      )
+      XED_STAMPS.forEach((_, i) => {
+        const o = XED_SCATTER[i]
+        tl.fromTo(
+          `.xed-stamp-${i}`,
+          { autoAlpha: 0, x: o.x * 1.7 * k, y: (o.y * 1.6 - 60) * k, rotation: o.r * 1.6 },
+          { autoAlpha: 1, x: o.x * k, y: o.y * k, rotation: o.r, duration: 0.55, ease: 'power3.out', immediateRender: true },
+          2.45 + i * 0.16,
+        )
+      })
+      /* C — o punch assume o centro; o título SAI pelas máscaras (mesma linguagem
+         da entrada) ANTES do punch entrar — colisão impossível em qualquer resolução */
+      tl.to('.xed-lead', { opacity: 0.12, y: -26 * k, duration: 0.6 }, 4.55)
+      tl.to('.xed-t1', { yPercent: -118, duration: 0.6, ease: 'power2.in' }, 4.55)
+      tl.to('.xed-t2', { yPercent: -124, duration: 0.6, ease: 'power2.in' }, 4.66)
+      tl.to('.xed-eyebrow', { opacity: 0, y: -14, duration: 0.4 }, 4.6)
+      tl.fromTo('.xed-p1', { yPercent: 120 }, { yPercent: 0, duration: 0.8, ease: 'power4.out', immediateRender: true }, 5.35)
+      tl.fromTo('.xed-p2', { yPercent: 130 }, { yPercent: 0, duration: 0.9, ease: 'power4.out', immediateRender: true }, 5.6)
+      /* os selos se alinham num índice — preparando as três manifestações */
+      tl.to('.xed-stamp', { x: 0, y: 0, rotation: 0, duration: 0.9, ease: 'power3.inOut', stagger: 0.05 }, 5.75)
+      tl.to('.xed-strip', { opacity: 0.12, duration: 0.6 }, 5.75)
+      tl.fromTo('.xed-cue', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, immediateRender: true }, 6.65)
+      tl.to({}, { duration: 0.75 }) // hold antes de liberar para "Tipos"
+    }, secRef)
+
+    /* micro-paralaxe de cursor nas camadas (desktop; nada depende de hover) */
+    let offMove: (() => void) | undefined
+    if (!mobile && matchMedia('(pointer: fine)').matches) {
+      const layers = gsap.utils.toArray<HTMLElement>('.xed-layer', secRef.current!)
+      const quick = layers.map((el) => ({
+        d: Number(el.dataset.depth || 1),
+        x: gsap.quickTo(el, 'x', { duration: 0.6, ease: 'power3.out' }),
+        y: gsap.quickTo(el, 'y', { duration: 0.6, ease: 'power3.out' }),
+      }))
+      const mm = () => quick.forEach((q) => { q.x(xstore.mx * -7 * q.d); q.y(xstore.my * -5 * q.d) })
+      window.addEventListener('mousemove', mm, { passive: true })
+      offMove = () => window.removeEventListener('mousemove', mm)
+    }
+    return () => {
+      offMove?.()
+      ctx.revert()
+    }
+  }, [variant, reduced])
+
+  return (
+    <section
+      ref={secRef}
+      id="c-experiencias"
+      className={`x-ch x-exped ${reduced ? '' : 'is-anim'}`}
+      style={{ height: '460vh' }}
+      aria-label="Criamos experiências"
+    >
+      <div className="x-ch-view">
+        <div className="xed-layer xed-layer-echo" data-depth="2.4" aria-hidden="true">
+          <span className="xed-echo">VIVIDA</span>
+        </div>
+        <div className="xed-layer" data-depth="1.15">
+          <div className="xed-title">
+            <p className="xed-eyebrow x-mono">01 — O QUE FAZEMOS</p>
+            <h2 aria-label="Criamos experiências.">
+              <span className="xed-mask" aria-hidden="true">
+                <span className="xed-line xed-t1">Criamos</span>
+              </span>
+              <span className="xed-mask" aria-hidden="true">
+                <span className="xed-line xed-t2"><em>experiências.</em></span>
+              </span>
+            </h2>
+          </div>
+        </div>
+        <div className="xed-layer" data-depth="0.7">
+          <p className="xed-lead">Projetamos novas formas de interação entre marcas e pessoas.</p>
+        </div>
+        <div className="xed-strip x-mono" aria-hidden="true">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <span key={i}>EXPERIÊNCIAS DIGITAIS · COMERCIAIS · FÍSICAS · CONECTADAS — </span>
+          ))}
+        </div>
+        <p className="xed-sr">Experiências digitais, comerciais, físicas e conectadas.</p>
+        <div className="xed-layer" data-depth="1.7">
+          <ul className="xed-stamps" aria-label="Territórios de experiência">
+            {XED_STAMPS.map((s, i) => (
+              <li key={s} className={`x-mono xed-stamp xed-stamp-${i}`}>{s}</li>
+            ))}
+          </ul>
+        </div>
+        <p className="xed-punch">
+          <span className="xed-pmask">
+            <span className="xed-pline xed-p1">Uma marca precisa ser percebida.</span>
+          </span>
+          <span className="xed-pmask">
+            <span className="xed-pline xed-p2">Uma experiência precisa ser <em>vivida.</em></span>
+          </span>
+        </p>
+        <p className="xed-cue x-mono" aria-hidden="true">TRÊS MANIFESTAÇÕES ↓</p>
+      </div>
+    </section>
+  )
+}
+
+/* ---------------- tipos: cartão de vídeo (fonte única de verdade = typeIdx) ----------------
+   O cartão vive DENTRO da view sticky do capítulo — estruturalmente não pode existir
+   fora de #c-tipos nem invadir "Método". O MESMO índice que dirige número, título,
+   descrição e lista dirige o slot ativo: crossfade por CSS entre camadas empilhadas
+   (nunca tela preta — o placeholder charcoal fica por baixo). Monta só o vídeo ativo
+   + o próximo; reproduz apenas o ativo, e apenas com o cartão em viewport e a aba
+   visível. prefers-reduced-motion: poster estático, sem <video>. */
+function TypeCard({ idx }: { idx: number }) {
+  const boxRef = useRef<HTMLElement>(null)
+  const vids = useRef<Array<HTMLVideoElement | null>>([])
+  const reduced = usePrefersReducedMotion()
+  const [inView, setInView] = useState(false)
+  const [mounted, setMounted] = useState<number[]>([0, 1])
+
+  /* carrega prioritariamente o ativo e, no máximo, o próximo — nunca recria os já montados */
+  useEffect(() => {
+    setMounted((m) => {
+      const need = [idx, Math.min(idx + 1, TYPES.length - 1)].filter((i) => !m.includes(i))
+      return need.length ? [...m, ...need] : m
+    })
+  }, [idx])
+
+  useEffect(() => {
+    const el = boxRef.current
+    if (!el) return
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { threshold: 0.15 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
+  /* só o vídeo ativo reproduz; pausa ao sair da seção/aba e retoma ao voltar */
+  useEffect(() => {
+    const sync = () => {
+      vids.current.forEach((v, i) => {
+        if (!v) return
+        if (i === idx && inView && !reduced && !document.hidden) v.play().catch(() => {})
+        else if (!v.paused) v.pause()
+      })
+    }
+    sync()
+    document.addEventListener('visibilitychange', sync)
+    return () => document.removeEventListener('visibilitychange', sync)
+  }, [idx, inView, reduced])
+
+  return (
+    <aside ref={boxRef} className="xt-card" aria-hidden="true">
+      <div className="xt-media">
+        {TYPES.map((ty, i) => (
+          <div key={ty.t} className={`xt-slot ${i === idx ? 'is-on' : ''}`}>
+            <div className="xt-ph">
+              <b>0{i + 1}</b>
+              <span className="x-mono">{ty.sig[0]} · {ty.sig[1]}</span>
+            </div>
+            {reduced ? (
+              <img src={ty.poster} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+            ) : (
+              mounted.includes(i) && (
+                <video
+                  ref={(el) => { vids.current[i] = el }}
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  poster={ty.poster}
+                >
+                  <source src={ty.video} type="video/mp4" />
+                </video>
+              )
+            )}
+          </div>
+        ))}
+      </div>
+      <p className="xt-caption x-mono" key={idx}>
+        <span>T_0{idx + 1}</span>
+        <span>{TYPES[idx].t}</span>
+        <i />
+      </p>
+    </aside>
+  )
+}
+
 /* progress within a chapter track → local state (for step lists) */
 function useChapterIndex(id: string, count: number) {
   const [idx, setIdx] = useState(0)
@@ -482,56 +706,6 @@ function useReveals(scope: React.RefObject<HTMLElement>) {
   }, [scope])
 }
 
-/* ---------------- case editorial (expansível, acessível, orientado a dados) ---------------- */
-function CaseArticle({ c, i }: { c: (typeof CASES)[number]; i: number }) {
-  const [open, setOpen] = useState(i === 0)
-  const hasBody = !!(c.contexto || c.desafio || c.ideia || c.experiencia || c.sistema?.length || c.impacto)
-  const sections: Array<[string, string | undefined]> = [
-    ['CONTEXTO', c.contexto],
-    ['DESAFIO', c.desafio],
-    ['IDEIA', c.ideia],
-    ['EXPERIÊNCIA', c.experiencia],
-    ['IMPACTO', c.impacto],
-  ]
-  return (
-    <article className={`x-case ${open ? 'is-open' : ''}`}>
-      <button
-        type="button"
-        className="x-case-head"
-        aria-expanded={open}
-        onClick={() => hasBody && setOpen(!open)}
-        data-x=""
-      >
-        <span className="x-mono x-case-num">C_{String(i + 1).padStart(2, '0')}</span>
-        <span className="x-case-title">
-          <h3>{c.title}</h3>
-          <span className="x-mono x-case-area">{c.area}</span>
-        </span>
-        <span className={`x-mono x-case-status ${c.status === 'EM BREVE' ? 'is-soon' : ''}`}>{c.status}</span>
-        {hasBody && <span className="x-case-toggle" aria-hidden="true">{open ? '−' : '+'}</span>}
-      </button>
-      {hasBody && open && (
-        <div className="x-case-body">
-          {sections.map(([k, v]) => v && (
-            <div className="x-case-block" key={k}>
-              <span className="x-mono">{k}</span>
-              <p>{v}</p>
-            </div>
-          ))}
-          {!!c.sistema?.length && (
-            <div className="x-case-block">
-              <span className="x-mono">SISTEMA</span>
-              <ul className="x-tags x-mono">
-                {c.sistema.map((s) => <li key={s}>{s}</li>)}
-              </ul>
-            </div>
-          )}
-        </div>
-      )}
-    </article>
-  )
-}
-
 /* ---------------- the journey ---------------- */
 export default function Journey() {
   const [booted, setBooted] = useState(false)
@@ -562,7 +736,8 @@ export default function Journey() {
   useEffect(() => {
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
     let lightNow = false
-    const zones: Array<readonly [number, number]> = [[CH.manifesto[0], CH.presenca[1]], CH.cases]
+    /* única zona clara restante: manifesto → presença (cases agora é capítulo escuro opaco) */
+    const zones: Array<readonly [number, number]> = [[CH.manifesto[0], CH.presenca[1]]]
     const H = 0.014
     const applyTheme = (p: number) => {
       const inZone = zones.some(([a, b]) => (lightNow ? p > a - H && p < b + H : p > a + H && p < b - H))
@@ -726,51 +901,34 @@ export default function Journey() {
           </ul>
         </Chapter>
 
-        {/* 03 — O QUE FAZEMOS · TERRITÓRIO 2 (de volta ao escuro: reação) */}
-        <Chapter id="c-experiencias" vh={220} className="x-experiencias">
-          <p className="x-eyebrow x-mono" data-reveal>01 — O QUE FAZEMOS</p>
-          <h2 className="x-echo" data-text="VIVIDA" data-reveal>
-            Criamos <em>experiências.</em>
-          </h2>
-          <p className="x-lead" data-reveal>
-            Projetamos novas formas de interação entre marcas e pessoas.
-          </p>
-          <p className="x-copy" data-reveal>
-            Experiências digitais, comerciais, físicas e conectadas que podem acontecer em uma tela,
-            em uma jornada de compra, em um evento, em um espaço ou em um dispositivo.
-          </p>
-          <ul className="x-tags x-mono" data-reveal>
-            {['DIGITAL', 'COMMERCE', 'APPS', 'AR / VR', 'IOT', 'EVENTOS', 'LANÇAMENTOS'].map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-          <p className="x-copy x-copy-punch x-close-punch" data-reveal>
-            Uma marca precisa ser percebida. <strong>Uma experiência precisa ser vivida.</strong>
-          </p>
-        </Chapter>
+        {/* 03 — O QUE FAZEMOS · TERRITÓRIO 2 — capítulo editorial: aqui a linguagem
+            de navegação 3D é interrompida (superfície preta, tipografia, máscaras, scroll) */}
+        <ExperienceEditorial />
 
-        {/* 04 — TIPOS DE EXPERIÊNCIA (três estados de um mesmo sistema) */}
+        {/* 04 — TIPOS DE EXPERIÊNCIA — typeIdx é a ÚNICA fonte de verdade: dirige o
+            número, o título, a descrição, as tags, a lista E o cartão de vídeo.
+            Terços do progresso local de #c-tipos via useChapterIndex (sobe e desce). */}
         <Chapter id="c-tipos" vh={300} className="x-tipos">
           <p className="x-eyebrow x-mono">02 — TIPOS DE EXPERIÊNCIA</p>
-          <div className="x-build-grid">
-            <span className="x-build-idx" aria-hidden="true" key={`n${typeIdx}`}>
+          <div className="xt-grid">
+            <span className="xt-idx" aria-hidden="true" key={`n${typeIdx}`}>
               0{typeIdx + 1}
             </span>
-            <div className="x-build-body">
-              <div className="x-station" key={typeIdx}>
-                <h2>{TYPES[typeIdx].t}</h2>
-                <p>{TYPES[typeIdx].d}</p>
-                <ul className="x-tags x-mono x-type-sig">
-                  {TYPES[typeIdx].sig.map((s) => <li key={s}>{s}</li>)}
-                </ul>
-              </div>
-              <ol className="x-build-list">
-                {TYPES.map((s, i) => (
-                  <li key={s.t} className={i === typeIdx ? 'is-on' : ''}>
-                    <span className="x-mono">0{i + 1}</span> {s.t}
-                  </li>
-                ))}
-              </ol>
+            <h2 className="xt-title xt-swap" key={`t${typeIdx}`}>{TYPES[typeIdx].t}</h2>
+            <TypeCard idx={typeIdx} />
+            <p className="xt-desc xt-swap" key={`d${typeIdx}`}>{TYPES[typeIdx].d}</p>
+            <ul className="x-tags x-mono x-type-sig xt-sig xt-swap" key={`s${typeIdx}`}>
+              {TYPES[typeIdx].sig.map((s) => <li key={s}>{s}</li>)}
+            </ul>
+            <ol className="xt-list">
+              {TYPES.map((s, i) => (
+                <li key={s.t} className={i === typeIdx ? 'is-on' : ''}>
+                  <span className="x-mono">0{i + 1}</span> {s.t}
+                </li>
+              ))}
+            </ol>
+            <div className="xt-dots" aria-hidden="true">
+              {TYPES.map((s, i) => <i key={s.t} className={i === typeIdx ? 'is-on' : ''} />)}
             </div>
           </div>
           <p className="x-note x-mono">TRÊS MANIFESTAÇÕES. UM MESMO SISTEMA.</p>
@@ -800,60 +958,13 @@ export default function Journey() {
           </p>
         </Chapter>
 
-        {/* 06 — CASES (editorial, poucos projetos, profundidade — zona bone) */}
-        <Chapter id="c-cases" vh={260} className="x-cases">
-          <p className="x-eyebrow x-mono" data-reveal>04 — CASES</p>
-          <h2 className="x-echo" data-text="CASES" data-reveal>
-            Poucos projetos, <em>contados a fundo.</em>
-          </h2>
-          <p className="x-copy" data-reveal>
-            Contexto, desafio, ideia, experiência, sistema e impacto — cada case mostra como uma
-            ambição ganhou presença. Sem números inflados, sem cases emprestados.
-          </p>
-          <div className="x-case-list" data-reveal>
-            {CASES.map((c, i) => (
-              <CaseArticle c={c} i={i} key={c.slug} />
-            ))}
-          </div>
-        </Chapter>
+        {/* 06 — CASES — capítulo editorial próprio (princípio da section_join):
+            sem objetos 3D, mídia protagonista, timeline única scrubada */}
+        <CasesSection />
 
-        {/* 07 — CONTATO */}
-        <Chapter id="c-contato" vh={230} className="x-contato">
-          <p className="x-eyebrow x-mono" data-reveal>05 — COMEÇAR</p>
-          <h2 data-reveal>
-            O que sua marca precisa <em>construir agora?</em>
-          </h2>
-          <p className="x-copy" data-reveal>
-            Uma presença mais forte. Uma nova experiência digital. Uma jornada de compra diferente.
-            Um lançamento, uma ativação, um espaço conectado — ou algo que ainda não tem um formato definido.
-          </p>
-          <p className="x-copy x-copy-punch" data-reveal>
-            Conte a ambição. <strong>A gente ajuda a dar forma a ela.</strong>
-          </p>
-          <div data-reveal>
-            <ContactForm />
-          </div>
-          <footer className="x-foot" data-reveal>
-            <div>
-              <p className="x-mono">CONTATO</p>
-              <a href="mailto:hello@mayven.com.br">hello@mayven.com.br</a>
-            </div>
-            <div>
-              <p className="x-mono">SOCIAL</p>
-              <a href="https://instagram.com" target="_blank" rel="noreferrer">Instagram</a>
-              <a href="https://linkedin.com" target="_blank" rel="noreferrer">LinkedIn</a>
-            </div>
-            <div>
-              <p className="x-mono">CLIENTES</p>
-              <a href="/client">Área do Cliente →</a>
-            </div>
-            <div>
-              <p className="x-mono">MAYVEN</p>
-              <p>Creative Tech Media Company</p>
-              <p className="x-legal">© 2026 MAYVEN — Presença para marcas que não nasceram para parecer comuns.</p>
-            </div>
-          </footer>
-        </Chapter>
+        {/* 07 — CONTATO — o finale: painel charcoal sobre fundo magenta,
+            composição centralizada, sem objetos 3D (ver ContactFinale) */}
+        <ContactFinale />
       </main>
     </div>
   )
